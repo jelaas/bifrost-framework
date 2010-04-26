@@ -1,0 +1,7 @@
+#!/bin/bash
+# Start the interface statistics daemon ifstat2
+
+[ "$1" = start ] && [ -f /sbin/ifstat2 ] && taskset -c 0 /sbin/ifstat2 -d 1 -t 5  > /dev/null && exit 0
+[ "$1" = stop ] && [ -f /sbin/ifstat2 ] && killall ifstat2  && exit 0
+
+exit 1

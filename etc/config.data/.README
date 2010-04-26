@@ -1,0 +1,15 @@
+
+machine		= decides which preconfigured host it will run as (SLU specific)
+inet.routes	= static route options
+dummy0.nic	= dummy network interface
+eth*.nic	= Ethernet network interface(s)
+ntp		= NTP time server (also edit /etc/ntp.conf)
+
+The SLU specific option "machine" can be either empty (default) or contain the line:
+
+export MACHINE=hades
+or
+export MACHINE=expgw
+
+for example...
+

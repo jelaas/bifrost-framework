@@ -1,0 +1,40 @@
+#!/bin/sh
+#
+# Allow all packets out from local subnets.
+# Note that some protocols need to be opened
+# in the other direction as well...
+#
+# Deny spoofed packets and log them in fwrules.ingress
+# (Ingress Filtering, RFC2267)
+#
+
+source /filter/fw.conf
+echo "$0"
+
+ARG=$1
+if [ ${1:-none} = "none" ]; then
+    ARG="refresh"
+    ipchains -F out
+else
+    if [ $ARG != "refresh" -a $ARG != "purge" -a $ARG != "delete" ]; then
+        echo
+        echo "Usage:   $0 <refresh|purge|delete>"
+        echo "Example: $0 refresh    (default)"
+        echo
+        exit
+    fi
+fi
+case $ARG in ( refresh ) ACTION="-A"; ipchains -F out;;
+             ( purge )   ACTION="-D";;
+             ( delete )  ACTION="-D"; ipchains -F out; exit;;
+esac
+
+###------- Edit Rules Below -------###
+
+# FORWARD input out
+ipchains $ACTION out -i $IF_IP2 -s $NET_IP2 -j ACCEPT
+
+# DMZ net
+ipchains $ACTION out -i $IF_IP3 -s $ZEUS -j ACCEPT
+ipchains $ACTION out -i $IF_IP3 -s $NEMESIS -j ACCEPT
+ipchains $ACTION out -i $IF_IP3 -s $ARES -j ACCEPT

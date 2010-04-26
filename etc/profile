@@ -1,0 +1,24 @@
+# commands common to all logins
+#export TZ=CET-1CEST,M3.5.0,M10.5.0/03:00:00
+HOSTNAME="`cat /etc/HOSTNAME`"
+PATH="/bin:/sbin:/usr/bin:/usr/sbin:/etc:."
+
+APATH=/bin32
+if [ `uname -m` = x86_64 ]; then
+ APATH=/bin64
+fi
+
+# Adding possible paths for opt-packages
+PATH=$APATH:$PATH:/opt/emacs/bin:/opt/nomad/bin:/opt/sniff/bin:/opt/snmp/bin:/opt/snmp/sbin:/opt/www/apache/bin:/opt/zebra/bin:/opt/zebra/sbin
+
+if [ "$TERM" = "" -o "$TERM" = "unknown" ]; then
+   TERM=linux
+else
+   TERM=xterm
+fi
+
+HISTFILE=
+PS1='\h:\w\$ '
+PS2='> '
+export HOSTNAME PATH TERM HISTFILE PS1 PS2
+umask 022

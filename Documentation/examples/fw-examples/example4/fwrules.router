@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+# Router protection (Gated, OSPF, BGP)
+#
+
+echo "fwrules.router"
+
+# LOCAL input in
+
+# OSPF (port 89)
+ipchains -A input -p TCP -i $IF_IP -s $NET_B $HI -d $IP 89 -j ACCEPT
+ipchains -A input -p TCP -i $IF_IP2 -s $NET_242 $HI -d $IP2 89 -j ACCEPT
+
+ipchains -A input -p TCP -d $IP 89 -j REJECT
+ipchains -A input -p TCP -d $IP2 89 -j REJECT
+
+
+# BGP (port 179)
+ipchains -A input -p TCP -i $IF_IP -s $NET_B $HI -d $IP bgp -j ACCEPT
+ipchains -A input -p TCP -i $IF_IP2 -s $NET_242 $HI -d $IP2 bgp -j ACCEPT
+
+ipchains -A input -p TCP -d $IP bgp -j REJECT
+ipchains -A input -p TCP -d $IP2 bgp -j REJECT
+
+
+# Gated config (port 616)
+ipchains -A input -p TCP -i $IF_IP2 -s $ROBUR $HI -d $IP2 616 -j ACCEPT
+ipchains -A input -p TCP -i $IF_IP2 -s $NET_127 $HI -d $IP2 616 -j ACCEPT
+
+ipchains -A input -p TCP -d $IP 616 -j REJECT
+ipchains -A input -p TCP -d $IP2 616 -j REJECT

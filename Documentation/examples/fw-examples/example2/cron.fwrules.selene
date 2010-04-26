@@ -1,0 +1,71 @@
+#!/bin/sh
+#
+# Cron controlled traffic for Selene. Use your crontab
+# to start or stop this script at a proper time.
+#
+# It should be called as:  cron.fwrules.selene <start|stop>
+#
+# The crontab entries may look like something like this:
+# (start Monday and Friday 17:00 and stop after 3 hours)
+#
+# 0 17 * * 1,5 /filter/cron.fwrules.selene start
+# 0 20 * * 1,5 /filter/cron.fwrules.selene stop
+#
+
+case "$1" in
+  start)
+	echo -n "Starting: "
+	echo "cron.fwrules.selene"
+#
+# Enter you START filter rules from HERE...
+# -----------------------------------------
+
+source /filter/fw.conf
+
+ipchains -A cron -p UDP -i $IF_IP -s $POLAND1 $HI -d $SELENE $HI -j ACCEPT
+ipchains -A cron -p TCP -i $IF_IP -s $POLAND1 -d $SELENE 389 -j ACCEPT
+ipchains -A cron -p TCP -i $IF_IP -s $POLAND1 -d $SELENE 522 -j ACCEPT
+ipchains -A cron -p TCP -i $IF_IP -s $POLAND1 $HI -d $SELENE 1503 -j ACCEPT
+ipchains -A cron -p TCP -i $IF_IP -s $POLAND1 $HI -d $SELENE 1720 -j ACCEPT
+
+ipchains -A cron -p UDP -i $IF_IP -s $POLAND2 $HI -d $SELENE $HI -j ACCEPT
+ipchains -A cron -p TCP -i $IF_IP -s $POLAND2 -d $SELENE 389 -j ACCEPT
+ipchains -A cron -p TCP -i $IF_IP -s $POLAND2 -d $SELENE 522 -j ACCEPT
+ipchains -A cron -p TCP -i $IF_IP -s $POLAND2 $HI -d $SELENE 1503 -j ACCEPT
+ipchains -A cron -p TCP -i $IF_IP -s $POLAND2 $HI -d $SELENE 1720 -j ACCEPT
+
+ipchains -A cron -p UDP -i $IF_IP -s $POLAND3 $HI -d $SELENE $HI -j ACCEPT
+ipchains -A cron -p TCP -i $IF_IP -s $POLAND3 -d $SELENE 389 -j ACCEPT
+ipchains -A cron -p TCP -i $IF_IP -s $POLAND3 -d $SELENE 522 -j ACCEPT
+ipchains -A cron -p TCP -i $IF_IP -s $POLAND3 $HI -d $SELENE 1503 -j ACCEPT
+ipchains -A cron -p TCP -i $IF_IP -s $POLAND3 $HI -d $SELENE 1720 -j ACCEPT
+
+ipchains -A cron -p UDP -i $IF_IP -s $POLAND4 $HI -d $SELENE $HI -j ACCEPT
+ipchains -A cron -p TCP -i $IF_IP -s $POLAND4 -d $SELENE 389 -j ACCEPT
+ipchains -A cron -p TCP -i $IF_IP -s $POLAND4 -d $SELENE 522 -j ACCEPT
+ipchains -A cron -p TCP -i $IF_IP -s $POLAND4 $HI -d $SELENE 1503 -j ACCEPT
+ipchains -A cron -p TCP -i $IF_IP -s $POLAND4 $HI -d $SELENE 1720 -j ACCEPT
+
+# -----------------------------------------
+# ... to HERE.
+#
+	;;
+  stop)
+	echo -n "Stopping: "
+	echo "cron.fwrules.selene"
+#
+# Enter you STOP filter rules from HERE...
+# -----------------------------------------
+
+ipchains -F cron
+
+# -----------------------------------------
+# ... to HERE.
+#
+	;;
+  *)
+	echo "Usage: cron.fwrules.selene {start|stop}"
+	exit 1
+esac
+
+exit 0

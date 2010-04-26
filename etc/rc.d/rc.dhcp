@@ -1,0 +1,22 @@
+#!/bin/bash
+#
+
+function killproc {
+    [ -f /var/run/${1}.pid ] && read pid < /var/run/${1}.pid && kill "$pid" || killall "$1"
+}
+
+
+if [ "$1" = start ]; then
+# INTERFACE="eth1 eth2 eth3"
+    INTERFACE=eth1
+# Create lease files
+    touch /tmp/dhcpd.leases
+    touch /tmp/dhcpd.leases~
+
+# Start the DHCP server
+    [ -f /sbin/dhcpd ] && taskset -c 0 /sbin/dhcpd -lf /tmp/dhcpd.leases $INTERFACE && exit 0
+fi
+
+[ "$1" = stop ] && [ -f /sbin/dhcpd ] && killproc dhcpd && exit 0
+
+exit 1

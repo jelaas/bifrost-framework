@@ -1,0 +1,6 @@
+
+	Template files for firewall filters
+
+	This is a configuration to protect a gated router
+	and in particular the gated, OSPF and BGP ports.
+

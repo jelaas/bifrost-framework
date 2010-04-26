@@ -1,0 +1,33 @@
+#!/bin/sh
+#
+# Allow all packets out from Tkarlsson2
+#
+
+source /filter/fw.conf
+echo "$0"
+
+ARG=$1
+if [ ${1:-none} = "none" ]; then
+    ARG="refresh"
+    ipchains -F rate
+else
+    if [ $ARG != "refresh" -a $ARG != "purge" -a $ARG != "delete" ]; then
+	echo
+	echo "Usage:   $0 <refresh|purge|delete>"
+	echo "Example: $0 refresh    (default)"
+	echo
+	exit
+    fi
+fi
+case $ARG in ( refresh ) ACTION="-A"; ipchains -F rate;;
+	     ( purge )   ACTION="-D";;
+	     ( delete )  ACTION="-D"; ipchains -F rate; exit;;
+esac
+
+###------- Edit Rules Below -------###
+
+# Rate limit Tkarlsson2
+#ipchains $ACTION rate -d $NET_IP2 -m 2
+
+# Rate limit ICMP
+ipchains $ACTION rate -p ICMP -m 3

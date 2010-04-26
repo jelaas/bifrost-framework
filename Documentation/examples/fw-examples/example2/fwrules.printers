@@ -1,0 +1,37 @@
+#!/bin/sh
+#
+# Printers
+#
+
+source /filter/fw.conf
+echo "$0"
+
+ARG=$1
+if [ ${1:-none} = "none" ]; then
+    ARG="refresh"
+    ipchains -F printers
+else
+    if [ $ARG != "refresh" -a $ARG != "purge" -a $ARG != "delete" ]; then
+        echo
+        echo "Usage:   $0 <refresh|purge|delete>"
+        echo "Example: $0 refresh    (default)"
+        echo
+        exit
+    fi
+fi
+case $ARG in ( refresh ) ACTION="-A"; ipchains -F printers;;
+             ( purge )   ACTION="-D";;
+             ( delete )  ACTION="-D"; ipchains -F printers; exit;;
+esac
+
+###------- Edit Rules Below -------###
+
+# FORWARD input in
+ipchains $ACTION printers -p TCP -i $IF_IP -s $NET_96 -d $KEMIL1 printer -j ACCEPT
+ipchains $ACTION printers -p TCP -i $IF_IP -s $NET_98 -d $KEMIL1 printer -j ACCEPT
+
+ipchains $ACTION printers -p TCP -i $IF_IP -s $NET_96 -d $KEMIL2 printer -j ACCEPT
+ipchains $ACTION printers -p TCP -i $IF_IP -s $NET_98 -d $KEMIL2 printer -j ACCEPT
+
+ipchains $ACTION printers -p TCP -i $IF_IP -s $NET_96 -d $SML_HP printer -j ACCEPT
+ipchains $ACTION printers -p TCP -i $IF_IP -s $NET_98 -d $SML_HP printer -j ACCEPT

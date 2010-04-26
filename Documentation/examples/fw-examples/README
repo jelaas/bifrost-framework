@@ -1,0 +1,32 @@
+
+Example filter rules for ipchains.
+
+NOTE! In Bifrost 4.0 and later, you should really use the new
+netfilter/iptables instead. No example files included though, sorry...
+(except for Nomad and L7-filter)
+
+example1 = Rules to protect a single machine behind a Bifrost
+example2 = Rules to protect a complete network
+example3 = Rules to protect and restrict a private student lab network
+example4 = Rules to protect a router
+layer7   = A setup for layer7 detection (file sharing protocols and others)
+nomad    = Rules for the Bifrost Nomad project
+
+Just copy the fwrules* files to the /filter directory and the fwrules main
+file will be called from rc.inet at boot time.
+
+When using iptables with a 2.5 or 2.6 kernel, make sure to include the
+module path. For exmple in fwrules you should add:
+
+. /etc/config.data/kernel
+
+and then for example:
+
+insmod /lib/modules/$KERNEL/kernel/net/ipv4/netfilter/ip_tables.ko 2> /dev/null
+insmod /lib/modules/$KERNEL/kernel/net/ipv4/netfilter/iptable_filter.ko 2> /dev/null
+
+An alternative is to use modprobe, as of Bifrost v5.14 and later:
+
+modprobe ip_tables
+modprobe iptable_filter
+

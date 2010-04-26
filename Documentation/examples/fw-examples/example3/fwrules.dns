@@ -1,0 +1,18 @@
+#!/bin/sh
+#
+# DNS
+#
+
+echo "fwrules.dns"
+
+# LOCAL input in
+ipchains -A input -p UDP -i $IF_IP -s $SLUGER 53 -d $IP -j ACCEPT
+ipchains -A input -p UDP -i $IF_IP -s $PINUS 53 -d $IP -j ACCEPT
+ipchains -A input -p TCP -i $IF_IP ! -y -s $SLUGER 53 -d $IP -j ACCEPT
+ipchains -A input -p TCP -i $IF_IP ! -y -s $PINUS 53 -d $IP -j ACCEPT
+
+# LOCAL input out
+ipchains -A input -p UDP -i $IF_IP2 -s $NET_IP2 -d $SLUGER 53 -j ACCEPT
+ipchains -A input -p UDP -i $IF_IP2 -s $NET_IP2 -d $PINUS 53 -j ACCEPT
+ipchains -A input -p TCP -i $IF_IP2 -s $NET_IP2 -d $SLUGER 53 -j ACCEPT
+ipchains -A input -p TCP -i $IF_IP2 -s $NET_IP2 -d $PINUS 53 -j ACCEPT

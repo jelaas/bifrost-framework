@@ -1,0 +1,118 @@
+#!/bin/sh
+#
+# Main file for firewall rules, using ipchains.
+# Written by Tom Karlsson 1999-09-17.
+#
+
+ipchains --version
+echo "fwrules"
+
+#------------------
+# Flush, delete (, reset) and lock
+#
+ipchains -F
+ipchains -X
+#ipchains -Z
+ipchains -I input 1 -j DENY
+
+#------------------
+# Set default policy
+#
+# MASQ-net from NET_IP2 further down...
+#
+ipchains -P input REJECT
+ipchains -P forward REJECT
+ipchains -A forward -s 10.0.0.0/24 -j MASQ
+ipchains -P output ACCEPT
+
+#------------------
+# Set masquerade timings
+# TCP = 2 hours (def 15 min)
+# FIN = 10 seconds (def 2 min)
+# UDP = 60 seconds (def 5 min)
+#
+ipchains -M -S 7200 10 60
+
+#------------------
+# Local host definitions
+#
+export HOST="sesam.kemi.slu.se"
+export IP="10.10.99.11"
+export IP2="10.0.0.2"
+export IF_IP="eth0"
+export IF_IP2="eth1"
+export BC="255.255.255.255"
+export DBC="10.0.0.255"
+
+#------------------
+# Special host addresses used by DHCP
+#
+export ALL_ZEROS="0.0.0.0/32"
+export ALL_ONES="255.255.255.255/32"
+
+#------------------
+# Ports
+#
+export HI="1024:"
+export LO=":1023"
+export LYSKOM="4894"
+export WD="2627"
+export ICQ="4000"
+export NETBUS="12345"
+export NETBUS2="12346"
+export BO="31337"
+export TOT="12000"
+
+#------------------
+# Networks
+#
+export NET_ALL="0/0"
+export NET_IP="10.10.99.0/24"
+export NET_IP2="10.0.0.0/24"
+export NET_B="10.10.0.0/16"
+export NET_37="10.10.37.0/24"
+export NET_TSL="10.10.67.0/24"
+export NET_96="10.10.96.0/24"
+export NET_98="10.10.98.0/24"
+export NET_118="10.10.118.0/24"
+export NET_127="10.10.127.0/24"
+
+#------------------
+# Hosts
+#
+export HADES="10.10.99.2"
+#export RHEA="10.10.99.4"
+export ZEUS="10.10.99.6"
+export NEMESIS="10.10.99.10"
+export SESAM="10.10.99.11"
+
+export SLUGER="10.10.96.1"
+export POPULUS="10.10.98.8"
+export PINUS="10.10.98.11"
+#export ROBUR="10.10.98.12"
+export TKARLSSON="10.10.98.44"
+export TKARLSSON2="10.10.127.49"
+
+export ULMO="10.10.116.3"
+
+export FATBUREN="62.20.128.10"
+
+#------------------
+# Printers
+#
+
+#------------------
+# Call the other modules
+#
+/filter/fwrules.dns
+/filter/fwrules.http
+/filter/fwrules.login
+/filter/fwrules.ntp
+/filter/fwrules.snmp
+/filter/fwrules.icmp
+/filter/fwrules.log
+
+#------------------
+# Remove lock
+#
+ipchains -D input 1

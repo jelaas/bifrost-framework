@@ -1,0 +1,10 @@
+Create the files with name <interface>.<dot1q>:<label>.nic in /etc/config.flags
+and /etc/config.data and rc.interface will handle the rest.
+
+Example:
+$ cp /etc/config.data/dummy.nic /etc/config.data/ge1.100.nic
+$ echo  "yes"  > /etc/config.flags/ge1.100.nic
+$ /etc/rc.d/rc.interface ge1.100 up
+
+Creates vlan 100 on ge1. The syntax in the files is identical to ordinary 
+non-vlan interfaces.

@@ -1,0 +1,13 @@
+#!/bin/sh
+#
+# Clear all firewall rules and make sure to open up
+# the input rule set.
+#
+
+ipchains -F
+ipchains -X
+ipchains -P input ACCEPT
+ipchains -P forward MASQ
+
+echo "input is now set to ACCEPT"
+echo "and forward is set to MASQ"

@@ -1,0 +1,14 @@
+#!/bin/sh
+#
+# Clear all firewall rules and make sure to open up
+# the input and forward rule set.
+#
+source /filter/fw6.conf
+
+ip6tables -F
+ip6tables -X
+ip6tables -P INPUT ACCEPT
+ip6tables -P OUTPUT ACCEPT
+ip6tables -P FORWARD ACCEPT
+
+echo "INPUT, OUTPUT and FORWARD are now set to ACCEPT"

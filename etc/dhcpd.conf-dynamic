@@ -1,0 +1,28 @@
+#
+# DHCP example configuration for a dynamic pool of IPs.
+# Written by Tom Karlsson 020207.
+#
+
+# Common configurations -----------------------------------
+
+server-identifier dhcp.domain.se;
+  option domain-name-servers 10.10.1.1, 10.10.2.2;
+  server-name "dhcp.domain.se";
+  default-lease-time 900;
+  max-lease-time 900;
+  ddns-update-style none;
+
+
+subnet 10.23.96.64 netmask 255.255.255.192 {
+  option domain-name "domain.se";
+  option routers 10.23.96.66;
+  option subnet-mask 255.255.255.192;
+  option broadcast-address 255.255.255.255;
+  option ip-forwarding false;
+  option non-local-source-routing false;
+  option netbios-node-type 8;
+  option netbios-name-servers 10.23.2.3;
+  option ntp-servers 10.23.2.4;
+#  range dynamic-bootp 10.23.96.10 10.23.96.15;
+  range 10.23.96.67 10.23.96.120;
+}

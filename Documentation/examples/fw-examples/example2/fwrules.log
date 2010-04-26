@@ -1,0 +1,40 @@
+#!/bin/sh
+#
+# Explicit logging. The DENY jump is not necessary,
+# but will appear as DENY in the log which is better
+# than just a plain logged entry.
+# We don't allow the traffic to get through and therefor
+# it is more efficient to DENY it here than to let it parse
+# the rest of the rules.
+# As an example, the fwrules.login contains log rules without
+# DENY or ACCEPT just to get a log on each new connection.
+#
+
+source /filter/fw.conf
+echo "$0"
+
+ARG=$1
+if [ ${1:-none} = "none" ]; then
+    ARG="refresh"
+    ipchains -F log
+else
+    if [ $ARG != "refresh" -a $ARG != "purge" -a $ARG != "delete" ]; then
+        echo
+        echo "Usage:   $0 <refresh|purge|delete>"
+        echo "Example: $0 refresh    (default)"
+        echo
+        exit
+    fi
+fi
+case $ARG in ( refresh ) ACTION="-A"; ipchains -F log;;
+             ( purge )   ACTION="-D";;
+             ( delete )  ACTION="-D"; ipchains -F log; exit;;
+esac
+
+###------- Edit Rules Below -------###
+
+# Log all port connections, but skip a few common ones.
+ipchains $ACTION log -p TCP -i $IF_IP -y -d $RHEA smtp -j DENY
+ipchains $ACTION log -p TCP -i $IF_IP -y -d $NET_IP2 auth -j DENY
+
+ipchains $ACTION log -p TCP -i $IF_IP -y -d $NET_IP2 -j DENY -l

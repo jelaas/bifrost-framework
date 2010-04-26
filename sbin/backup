@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# Make a total backup of the system and
+# transfer the backup via ssh to some
+# remote destination.
+
+# You may want to change the location of the backup file
+# to make it more secure and perhaps the file name itself.
+
+BACKUP_USER=root
+BACKUP_HOST=host.domain.se
+
+echo
+echo "Backing up everything through an ssh tunnel."
+echo "After entering the password, please wait for"
+echo "the shell prompt to come back (the compression"
+echo "takes time, which depends on the remote host)."
+echo
+
+remount r
+umount -n /mnt 2> /dev/null
+mount -nr /dev/hda1 /mnt 2> /dev/null
+cd /mnt
+
+tar cpf - . | ssh $BACKUP_USER@$BACKUP_HOST 'umask 077;rm -f /tmp/bifrost.tar*;dd of=/tmp/bifrost.tar;gzip -9 /tmp/bifrost.tar'
+
+cd -
+umount -n /mnt 2> /dev/null

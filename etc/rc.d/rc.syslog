@@ -1,0 +1,18 @@
+#!/bin/bash
+
+function killproc {
+    [ -f /var/run/${1}.pid ] && read pid < /var/run/${1}.pid && kill "$pid" || killall "$1"
+}
+
+if [ "$1" = start ]; then
+    [ -f /usr/sbin/syslogd ] && taskset -c 0 /usr/sbin/syslogd -m 0
+    [ -f /usr/sbin/klogd ] && taskset -c 0 /usr/sbin/klogd -c 4
+    exit 0
+fi
+if [ "$1" = stop ]; then
+    [ -f /usr/sbin/syslogd ] && killproc syslogd
+    [ -f /usr/sbin/klogd ] && killproc klogd
+    exit 0
+fi
+
+#	syslogd -m 0 -x -r

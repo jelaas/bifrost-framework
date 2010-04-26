@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+# Clear all filters
+#
+source /filter/fw.conf
+
+iptables -F
+iptables -X
+iptables -t mangle -F
+iptables -t mangle -X
+
+echo "Layer7 filters now flushed"

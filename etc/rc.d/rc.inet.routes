@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+# rc.inet.routes
+#
+# Description: Adding default and special routes (static)
+
+. /etc/config.data/eth0.nic
+. /etc/config.data/inet.routes
+
+ip r add default via $GATEWAY proto static
+
+

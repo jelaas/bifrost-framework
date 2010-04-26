@@ -1,0 +1,214 @@
+#!/bin/sh
+#
+# rc.interfaces
+
+
+DEV=$1
+ACTION=$2
+IF=$(echo $DEV | cut -d: -f1)
+LABEL=$(echo $DEV | cut -d: -s -f2)  # For sub interfaces?
+DOT1Q=$(echo $IF | cut -s -d. -f2)
+IF1Q=$(echo $IF | cut -d. -f1)
+
+usage()
+{
+    echo
+    echo "Usage: rc.interfaces <interface> <up|down|show>"
+    echo
+    exit
+}
+
+show()
+{    
+    echo
+    echo "Interface: $DEV = $DESCRIPTION"
+    echo
+
+    if [ ${IP4ADDR:-none} != "none" ]; then
+	echo "IP4: $IP4ADDR/$IP4MASK"
+	echo "Broadcast: $BROADCAST"
+    fi
+
+    if [ ${IP6ADDR:-none} != "none" ]; then
+	echo
+	echo "IP6: $IP6ADDR/$IP6MASK"
+    fi
+    echo "Options:"
+    echo
+    echo "Spoof Protection               (CONFIG_NO_SPOOF): $CONFIG_NO_SPOOF"
+    echo "Disable Source Routing        (CONFIG_NO_SOURCE): $CONFIG_NO_SOURCE"
+    echo "Proxy ARP                     (CONFIG_PROXY_ARP): $CONFIG_PROXY_ARP"
+    echo "Send ICMP Redirects            (CONFIG_REDIRECT): $CONFIG_REDIRECT"
+    echo "Accept ICMP Redirects   (CONFIG_ACCEPT_REDIRECT): $CONFIG_ACCEPT_REDIRECT"
+    echo "Log Src Addr With No Route (CONFIG_LOG_MARTIANS): $CONFIG_LOG_MARTIANS"
+    echo
+}
+
+down()
+{
+    echo "Taking down $DEV.."
+    echo "($DESCRIPTION)"
+
+    if [ ${LABEL:-none} != "none" ]; then
+	ip a del $IP4ADDR/$IP4MASK broadcast $BROADCAST dev $IF label $IF:$LABEL
+    else
+    	ip link set $IF down
+	ip a a 0.0.0.0 dev $IF
+#	ip a flush dev $IF
+    fi
+}
+
+up()
+{
+    echo "Bringing up $DEV..."
+    echo "($DESCRIPTION)"
+
+    #Load 1Q
+    if [ ${DOT1Q:-none} != "none" ]; then
+	    ip link set $IF1Q up
+            ip link add link $IF1Q name $DEV type vlan id $DOT1Q
+    fi
+
+    if [ ${IP4ADDR:-none} != "none" ]; then
+
+	if [ ${LABEL:-none} != "none" ]; then
+	    ip a add $IP4ADDR/$IP4MASK broadcast $BROADCAST dev $IF label $IF:$LABEL
+	else
+	    ip a add $IP4ADDR/$IP4MASK broadcast $BROADCAST dev $IF
+	    ip link set $IF up
+	fi
+    fi
+
+    if [ ${IP6ADDR:-none} != "none" ]; then
+	ip -6 a add $IP6ADDR/$IP6MASK dev $IF
+        ip link set $IF up
+    fi
+
+
+    if [ ${LABEL:-none} = "none" ]; then
+	eth-affinity -s
+    fi
+
+    if [ ${DHCP_CLIENT:-no} = "yes" ]; then
+	/sbin/dhcpcd $IF
+    fi
+
+# Set parameters in proc file system
+echo -n "Interface settings:"
+PRE=""
+
+set_spoof
+set_source_route
+set_proxy_arp
+set_redirect
+log_martinans
+echo " "
+}
+
+set_spoof()
+{
+   # Turn on Source Address Verification and get spoof protection
+    if [ -e /proc/sys/net/ipv4/conf/$IF/rp_filter ]; then
+	if [ ${CONFIG_NO_SPOOF:-no} = "yes" ]; then
+	    echo -n "$PRE spoof filtering on"
+	    PRE=","
+	    echo 1 > /proc/sys/net/ipv4/conf/$IF/rp_filter
+	    # Spotted by Gunnar Lingberg CTH 080915
+	    echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
+	else
+	    echo 0 > /proc/sys/net/ipv4/conf/$IF/rp_filter
+	fi
+    fi
+}
+
+set_source_route()
+{
+   # Turn off Source Route (this will deny source routed packets)
+    if [ -e /proc/sys/net/ipv4/conf/$IF/accept_source_route ]; then
+	if [ ${CONFIG_NO_SOURCE:-no} = "yes" ]; then
+	    echo -n "$PRE source routing off"
+	    PRE=","
+	    echo 0 > /proc/sys/net/ipv4/conf/$IF/accept_source_route
+	else
+	    echo 1 > /proc/sys/net/ipv4/conf/$IF/accept_source_route
+	fi
+    fi
+}
+
+set_proxy_arp()
+{
+    # Turn on Proxy ARP
+    if [ -e /proc/sys/net/ipv4/conf/$IF/proxy_arp ]; then
+	if [ ${CONFIG_PROXY_ARP:-no} = "yes" ]; then
+	    echo -n "$PRE proxy ARP on"
+	    PRE=","
+	    echo 1 > /proc/sys/net/ipv4/conf/$IF/proxy_arp
+	else
+	    echo 0 > /proc/sys/net/ipv4/conf/$IF/proxy_arp
+	fi
+    fi
+}
+
+set_redirect()
+{
+    # Turn on Send Redirect (On for routers, Off for hosts)
+    if [ -e /proc/sys/net/ipv4/conf/$IF/send_redirects ]; then
+	if [ ${CONFIG_REDIRECT:-no} = "yes" ]; then
+	    echo -n "$PRE send redirects"
+	    PRE=","
+	    echo 1 > /proc/sys/net/ipv4/conf/$IF/send_redirects
+	else
+	    echo 0 > /proc/sys/net/ipv4/conf/$IF/send_redirects
+	fi
+    fi
+}
+
+accept_redirect ()
+{
+    # Turn on Accept Redirects (On for hosts, Off for routers)
+    if [ -e /proc/sys/net/ipv4/conf/$IF/accept_redirects ]; then
+	if [ ${CONFIG_ACCEPT_REDIRECT:-no} = "yes" ]; then
+	    echo -n "$PRE Accept Redirects"
+	    PRE=","
+	    echo 1 > /proc/sys/net/ipv4/conf/$IF/accept_redirects
+	else
+	    echo 0 > /proc/sys/net/ipv4/conf/$IF/accept_redirects
+	fi
+    fi
+}
+
+log_martinans()
+{
+    # Turn on logging of stray source packets
+    if [ -e /proc/sys/net/ipv4/conf/$IF/log_martians ]; then
+	if [ ${CONFIG_LOG_MARTIANS:-no} = "yes" ]; then
+	    echo -n "$PRE log martians"
+	    PRE=","
+	    echo 1 > /proc/sys/net/ipv4/conf/$IF/log_martians
+	else
+	    echo 0 > /proc/sys/net/ipv4/conf/$IF/log_martians
+	fi
+    fi
+}
+
+
+if      [ $# -lt  2 ]; then usage
+fi
+
+echo label = $LABEL
+
+
+. /etc/config.data/$DEV.nic
+
+case  $ACTION in
+up)
+    up ;;
+down)
+    down ;;
+show)
+    show ;;
+*)
+
+   uasge ;;
+
+esac

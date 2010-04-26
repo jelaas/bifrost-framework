@@ -1,0 +1,80 @@
+#!/bin/sh
+#
+# This one is special as it uses two different sub chains;
+# icmp and ficmp. One for input rules and the other for
+# forwarding rules.
+#
+
+source /filter/fw.conf
+echo "$0"
+
+ARG=$1
+if [ ${ARG:-none} = "none" ]; then
+    ARG="refresh"
+    ipchains -F icmp
+    ipchains -F ficmp
+else
+    if [ $ARG != "refresh" -a $ARG != "purge" -a $ARG != "delete" ]; then
+        echo
+        echo "Usage:   $0 <refresh|purge|delete>"
+        echo "Example: $0 refresh    (default)"
+        echo
+        exit
+    fi
+fi
+case $ARG in ( refresh ) ACTION="-A"; ipchains -F icmp; ipchains -F ficmp;;
+             ( purge )   ACTION="-D";;
+             ( delete )  ACTION="-D"; ipchains -F icmp; ipchains -F ficmp; exit;;
+esac
+
+###------- Edit Rules Below -------###
+
+ipchains $ACTION icmp -i $IF_IP2 -p ICMP                             -j ACCEPT
+ipchains $ACTION icmp -i $IF_IP3 -p ICMP                             -j ACCEPT
+ipchains $ACTION ficmp -i $IF_IP2 -p ICMP                            -j ACCEPT
+ipchains $ACTION ficmp -i $IF_IP3 -p ICMP                            -j ACCEPT
+
+ipchains $ACTION icmp -p ICMP --icmp-type echo-reply                 -j ACCEPT
+
+ipchains $ACTION icmp -p ICMP --icmp-type network-unreachable        -j ACCEPT -l
+ipchains $ACTION icmp -p ICMP --icmp-type host-unreachable           -j ACCEPT
+ipchains $ACTION icmp -p ICMP --icmp-type protocol-unreachable       -j ACCEPT -l
+ipchains $ACTION icmp -p ICMP --icmp-type port-unreachable           -j ACCEPT
+ipchains $ACTION icmp -p ICMP --icmp-type fragmentation-needed       -j ACCEPT -l
+ipchains $ACTION icmp -p ICMP --icmp-type source-route-failed        -j ACCEPT -l
+ipchains $ACTION icmp -p ICMP --icmp-type network-unknown            -j ACCEPT -l
+ipchains $ACTION icmp -p ICMP --icmp-type host-unknown               -j ACCEPT -l
+ipchains $ACTION icmp -p ICMP --icmp-type network-prohibited         -j ACCEPT -l
+ipchains $ACTION icmp -p ICMP --icmp-type host-prohibited            -j ACCEPT -l
+ipchains $ACTION icmp -p ICMP --icmp-type TOS-network-unreachable    -j ACCEPT -l
+ipchains $ACTION icmp -p ICMP --icmp-type TOS-host-unreachable       -j ACCEPT -l
+ipchains $ACTION icmp -p ICMP --icmp-type communication-prohibited   -j ACCEPT -l
+ipchains $ACTION icmp -p ICMP --icmp-type host-precedence-violation  -j DENY -l
+ipchains $ACTION icmp -p ICMP --icmp-type precedence-cutoff          -j DENY -l
+ipchains $ACTION icmp -p ICMP --icmp-type destination-unreachable    -j ACCEPT -l
+
+ipchains $ACTION icmp -p ICMP --icmp-type source-quench              -j ACCEPT -l
+
+ipchains $ACTION icmp -p ICMP --icmp-type network-redirect           -j DENY -l
+ipchains $ACTION icmp -p ICMP --icmp-type host-redirect              -j DENY -l
+ipchains $ACTION icmp -p ICMP --icmp-type TOS-network-redirect       -j DENY -l
+ipchains $ACTION icmp -p ICMP --icmp-type TOS-host-redirect          -j DENY -l
+ipchains $ACTION icmp -p ICMP --icmp-type redirect                   -j DENY -l
+
+ipchains $ACTION icmp -p ICMP --icmp-type echo-request               -j ACCEPT
+
+ipchains $ACTION icmp -p ICMP --icmp-type router-advertisement       -j DENY -l
+ipchains $ACTION ficmp -p ICMP --icmp-type router-solicitation       -j DENY -l
+
+ipchains $ACTION icmp -p ICMP --icmp-type ttl-zero-during-transit    -j ACCEPT
+ipchains $ACTION icmp -p ICMP --icmp-type ttl-zero-during-reassembly -j ACCEPT -l
+ipchains $ACTION icmp -p ICMP --icmp-type time-exceeded              -j ACCEPT -l
+
+ipchains $ACTION icmp -p ICMP --icmp-type ip-header-bad              -j ACCEPT -l
+ipchains $ACTION icmp -p ICMP --icmp-type required-option-missing    -j ACCEPT -l
+ipchains $ACTION icmp -p ICMP --icmp-type parameter-problem          -j ACCEPT -l
+
+ipchains $ACTION icmp -p ICMP --icmp-type timestamp-request          -j DENY -l
+ipchains $ACTION icmp -p ICMP --icmp-type timestamp-reply            -j DENY -l
+ipchains $ACTION icmp -p ICMP --icmp-type address-mask-request       -j DENY -l
+ipchains $ACTION icmp -p ICMP --icmp-type address-mask-reply         -j DENY -l

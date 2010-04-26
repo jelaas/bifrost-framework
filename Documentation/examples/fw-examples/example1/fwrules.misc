@@ -1,0 +1,33 @@
+#!/bin/sh
+#
+# Misc services
+#
+
+source /filter/fw.conf
+echo "$0"
+
+ARG=$1
+if [ ${1:-none} = "none" ]; then
+    ARG="refresh"
+    ipchains -F misc
+else
+    if [ $ARG != "refresh" -a $ARG != "purge" -a $ARG != "delete" ]; then
+	echo
+	echo "Usage:   $0 <refresh|purge|delete>"
+	echo "Example: $0 refresh    (default)"
+	echo
+	exit
+    fi
+fi
+case $ARG in ( refresh ) ACTION="-A"; ipchains -F misc;;
+	     ( purge )   ACTION="-D";;
+	     ( delete )  ACTION="-D"; ipchains -F misc; exit;;
+esac
+
+###------- Edit Rules Below -------###
+
+# FORWARD input in
+ipchains $ACTION misc -p TCP -i $IF_IP ! -y -s $NET_ALL nntp -d $TKARLSSON2 $HI -j ACCEPT
+ipchains $ACTION misc -p TCP -i $IF_IP ! -y -s $NET_ALL finger -d $TKARLSSON2 $HI -j ACCEPT
+
+ipchains $ACTION misc -p UDP -i $IF_IP -s $LAGOM syslog -d $TKARLSSON2 syslog -j ACCEPT

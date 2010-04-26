@@ -1,0 +1,76 @@
+#!/bin/sh
+#
+# Main file for firewall rules, using ipchains.
+# Written by Tom Karlsson 990329.
+#
+
+ipchains --version
+echo "fwrules"
+
+#------------------
+# Flush and delete
+#
+ipchains -F
+ipchains -X
+
+#------------------
+# Set default policy
+#
+ipchains -P input ACCEPT
+ipchains -P forward ACCEPT
+ipchains -P output ACCEPT
+
+#------------------
+# Local host definitions
+#
+export HOST="ultrouter6.slu.se"
+export IP="130.242.201.34"
+export IP2="10.10.127.86"
+export IF_IP="eth0"
+export IF_IP2="eth1"
+export BC="255.255.255.255"
+export DBC="130.237.127.255"
+
+#------------------
+# Special host addresses used by DHCP
+#
+export ALL_ZEROS="0.0.0.0/32"
+export ALL_ONES="255.255.255.255/32"
+
+#------------------
+# Ports
+#
+export HI="1024:"
+export LO=":1023"
+
+#------------------
+# Networks
+#
+export NET_ALL="0/0"
+export NET_IP="130.242.201.32/29"
+export NET_IP2="130.237.127.84/30"
+export NET_B="10.10.0.0/16"
+export NET_242="130.242.0.0/16"
+export NET_96="10.10.96.0/24"
+export NET_98="10.10.98.0/24"
+export NET_118="10.10.118.0/24"
+export NET_127="10.10.127.0/24"
+
+#------------------
+# Hosts
+#
+export ROBUR="10.10.98.12"
+export TKARLSSON2="10.10.127.49"
+
+#------------------
+# Printers
+#
+
+
+#------------------
+# Call the other modules
+#
+/filter/fwrules.stat
+#/filter/fwrules.router
+/filter/fwrules.snmp
+/filter/fwrules.icmp

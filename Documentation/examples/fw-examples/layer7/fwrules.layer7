@@ -1,0 +1,50 @@
+#!/bin/sh
+#
+# Layer 7 filters for packet matching
+#
+
+source /filter/fw.conf
+echo "$0"
+
+ARG=$1
+if [ ${1:-none} = "none" ]; then
+    ARG="refresh"
+    iptables -t mangle -F POSTROUTING
+else
+    if [ $ARG != "refresh" -a $ARG != "purge" -a $ARG != "delete" ]; then
+        echo
+        echo "Usage:   $0 <refresh|purge|delete>"
+        echo "Example: $0 refresh    (default)"
+        echo
+        exit
+    fi
+fi
+case $ARG in ( refresh ) ACTION="-A"; iptables -t mangle -F POSTROUTING;;
+             ( purge )   ACTION="-D";;
+             ( delete )  ACTION="-D"; iptables -t mangle -F POSTROUTING; exit;;
+esac
+
+###------- Edit Rules Below -------###
+
+## L7 rules local
+#iptables -t mangle -A POSTROUTING $LIMIT4 -m layer7 --l7proto bittorrent -j LOG --log-level info --log-prefix "L7 bittorrent: "
+#iptables -t mangle -A POSTROUTING $LIMIT4 -m layer7 --l7proto directconnect -j LOG --log-level info --log-prefix "L7 directconnect: "
+#iptables -t mangle -A POSTROUTING $LIMIT4 -m layer7 --l7proto gnutella -j LOG --log-level info --log-prefix "L7 gnutella: "
+#iptables -t mangle -A POSTROUTING $LIMIT4 -m layer7 --l7proto skype -j LOG --log-level info --log-prefix "L7 skype: "
+#iptables -t mangle -A POSTROUTING $LIMIT4 -m layer7 --l7proto vnc -j LOG --log-level info --log-prefix "L7 vnc: "
+#iptables -t mangle -A POSTROUTING $LIMIT4 -m layer7 --l7proto ftp -j LOG --log-level info --log-prefix "L7 ftp: "
+#iptables -t mangle -A POSTROUTING $LIMIT4 -m layer7 --l7proto ssh -j LOG --log-level info --log-prefix "L7 ssh: "
+
+
+# L7 rules, just log through syslog (no QoS or drop/reject)
+iptables -I FORWARD -m layer7 --l7proto bittorrent -j LOG --log-level info --log-prefix "L7 bittorrent: "
+iptables -I FORWARD -m layer7 --l7proto directconnect -j LOG --log-level info --log-prefix "L7 directconnect: "
+iptables -I FORWARD -m layer7 --l7proto gnutella -j LOG --log-level info --log-prefix "L7 gnutella: "
+iptables -I FORWARD -m layer7 --l7proto skype -j LOG --log-level info --log-prefix "L7 skype: "
+iptables -I FORWARD -m layer7 --l7proto vnc -j LOG --log-level info --log-prefix "L7 vnc: "
+iptables -I FORWARD $LIMIT4 -m layer7 --l7proto ftp -j LOG --log-level info --log-prefix "L7 ftp: "
+iptables -I FORWARD $LIMIT4 -m layer7 --l7proto ssh -j LOG --log-level info --log-prefix "L7 ssh: "
+
+
+#echo "The Layer 7 filter list is now:"
+#iptables -t mangle -L POSTROUTING -nv

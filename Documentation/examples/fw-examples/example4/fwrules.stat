@@ -1,0 +1,14 @@
+#!/bin/sh
+#
+# Statistics
+#
+
+echo "fwrules.stat"
+
+# LOCAL forward
+ipchains -A forward -p TCP -y
+
+# Usage Statistics 
+ipchains -A forward -p TCP -d $NET_ALL http
+ipchains -A forward -p TCP -d $NET_ALL smtp
+ipchains -A forward -p TCP -d $NET_ALL ftp

@@ -1,0 +1,18 @@
+#!/bin/sh
+#
+# ICMP forwarding
+#
+
+echo "fwrules.icmp"
+
+# Router Discovery block
+ipchains -A input -p ICMP -s $NET_ALL 9 -j REJECT -l
+ipchains -A forward -p ICMP -s $NET_ALL 10 -j REJECT -l
+
+# LOCAL input
+ipchains -A input -p ICMP -i $IF_IP2 -s $NET_IP2 -d $IP2 -j ACCEPT
+ipchains -A input -p ICMP -i $IF_IP -s $NET_96 -d $IP -j ACCEPT
+ipchains -A input -p ICMP -i $IF_IP -s $NET_98 -d $IP -j ACCEPT
+ipchains -A input -p ICMP -i $IF_IP -s $NET_IP -d $IP -j ACCEPT
+ipchains -A input -p ICMP -i $IF_IP -s $NET_127 -d $IP -j ACCEPT
+ipchains -A input -p ICMP -i $IF_IP -s $NET_ALL -d $IP 3 -j ACCEPT -l

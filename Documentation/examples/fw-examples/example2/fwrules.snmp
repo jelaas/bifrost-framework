@@ -1,0 +1,39 @@
+#!/bin/sh
+#
+# SNMP
+#
+
+source /filter/fw.conf
+echo "$0"
+
+ARG=$1
+if [ ${1:-none} = "none" ]; then
+    ARG="refresh"
+    ipchains -F snmp
+else
+    if [ $ARG != "refresh" -a $ARG != "purge" -a $ARG != "delete" ]; then
+        echo
+        echo "Usage:   $0 <refresh|purge|delete>"
+        echo "Example: $0 refresh    (default)"
+        echo
+        exit
+    fi
+fi
+case $ARG in ( refresh ) ACTION="-A"; ipchains -F snmp;;
+             ( purge )   ACTION="-D";;
+             ( delete )  ACTION="-D"; ipchains -F snmp; exit;;
+esac
+
+###------- Edit Rules Below -------###
+
+# LOCAL input
+ipchains $ACTION snmp -p UDP -i $IF_IP3 -s $ZEUS $HI -d $IP snmp:snmp-trap -j ACCEPT
+ipchains $ACTION snmp -p UDP -i $IF_IP3 -s $ZEUS snmp:snmp-trap -d $IP $HI -j ACCEPT
+ipchains $ACTION snmp -p UDP -i $IF_IP3 -s $ZEUS $HI -d $IP2 snmp:snmp-trap -j ACCEPT
+ipchains $ACTION snmp -p UDP -i $IF_IP3 -s $ZEUS snmp:snmp-trap -d $IP2 $HI -j ACCEPT
+ipchains $ACTION snmp -p UDP -i $IF_IP3 -s $ZEUS $HI -d $IP3 snmp:snmp-trap -j ACCEPT
+ipchains $ACTION snmp -p UDP -i $IF_IP3 -s $ZEUS snmp:snmp-trap -d $IP3 $HI -j ACCEPT
+
+# Logging
+ipchains $ACTION snmp -p UDP -i $IF_IP -s $NET_ALL -d $IP snmp:snmp-trap -j DENY -l
+ipchains $ACTION snmp -p UDP -i $IF_IP -s $NET_ALL -d $NET_IP2 snmp:snmp-trap -j DENY -l

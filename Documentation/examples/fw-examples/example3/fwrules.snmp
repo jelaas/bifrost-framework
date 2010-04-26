@@ -1,0 +1,10 @@
+#!/bin/sh
+#
+# SNMP
+#
+
+echo "fwrules.snmp"
+
+# LOCAL input
+ipchains -A input -p UDP -i $IF_IP -s $ZEUS $HI -d $IP snmp:snmp-trap -j ACCEPT
+ipchains -A input -p UDP -i $IF_IP -s $ZEUS snmp:snmp-trap -d $IP $HI -j ACCEPT

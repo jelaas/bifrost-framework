@@ -1,0 +1,39 @@
+#!/bin/sh
+#
+# SMTP and POP3
+#
+
+source /filter/fw.conf
+echo "$0"
+
+ARG=$1
+if [ ${1:-none} = "none" ]; then
+    ARG="refresh"
+    ipchains -F mail
+else
+    if [ $ARG != "refresh" -a $ARG != "purge" -a $ARG != "delete" ]; then
+        echo
+        echo "Usage:   $0 <refresh|purge|delete>"
+        echo "Example: $0 refresh    (default)"
+        echo
+        exit
+    fi
+fi
+case $ARG in ( refresh ) ACTION="-A"; ipchains -F mail;;
+             ( purge )   ACTION="-D";;
+             ( delete )  ACTION="-D"; ipchains -F mail; exit;;
+esac
+
+###------- Edit Rules Below -------###
+
+# FORWARD input in
+ipchains $ACTION mail -p TCP -i $IF_IP -s $NET_ALL $HI -d $ZEUS smtp -j ACCEPT
+ipchains $ACTION mail -p TCP -i $IF_IP ! -y -s $NET_ALL smtp -d $NET_IP2 $HI -j ACCEPT
+
+ipchains $ACTION mail -p TCP -i $IF_IP ! -y -s $NET_ALL pop2 -d $NET_IP2 $HI -j ACCEPT
+ipchains $ACTION mail -p TCP -i $IF_IP ! -y -s $NET_ALL pop3 -d $NET_IP2 $HI -j ACCEPT
+ipchains $ACTION mail -p TCP -i $IF_IP ! -y -s $NET_ALL imap2 -d $NET_IP2 $HI -j ACCEPT
+ipchains $ACTION mail -p TCP -i $IF_IP ! -y -s $NET_ALL 106 -d $NET_IP2 $HI -j ACCEPT
+
+# send port unreachable icmp messages to auth requests to avoid timeouts
+ipchains $ACTION mail -p TCP -i $IF_IP -s $NET_ALL $HI -d $NET_IP2 $AUTH -j REJECT

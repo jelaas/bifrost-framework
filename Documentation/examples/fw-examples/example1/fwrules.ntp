@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+# NTP
+#
+
+source /filter/fw.conf
+echo "$0"
+
+ARG=$1
+if [ ${1:-none} = "none" ]; then
+    ARG="refresh"
+    ipchains -F ntp
+else
+    if [ $ARG != "refresh" -a $ARG != "purge" -a $ARG != "delete" ]; then
+	echo
+	echo "Usage:   $0 <refresh|purge|delete>"
+	echo "Example: $0 refresh    (default)"
+	echo
+	exit
+    fi
+fi
+case $ARG in ( refresh ) ACTION="-A"; ipchains -F ntp;;
+	     ( purge )   ACTION="-D";;
+	     ( delete )  ACTION="-D"; ipchains -F ntp; exit;;
+esac
+
+###------- Edit Rules Below -------###
+
+# INPUT input in
+ipchains $ACTION ntp -p UDP -i $IF_IP -s $NET_B -d $IP ntp -j ACCEPT
+ipchains $ACTION ntp -p UDP -i $IF_IP -s $SUNIC ntp -d $IP -j ACCEPT

@@ -1,0 +1,64 @@
+#!/bin/sh
+#
+# rc.6		This file is executed by init when it goes into runlevel
+#		0 (halt) or runlevel 6 (reboot). It kills all processes,
+#		unmounts file systems and then either halts or reboots.
+
+  # Set the path.
+  PATH=/bin:/sbin:/usr/bin:/usr/sbin:/etc
+
+  # Set linefeed mode to avoid staircase effect.
+  stty onlcr
+
+  echo "Running shutdown script $0:"
+
+  # Find out how we were called.
+  case "$0" in
+	*0)
+		message="The system is halted."
+		command="halt"
+		;;
+	*6)
+		message="Rebooting."
+		command=reboot
+		;;
+	*)
+		echo "$0: call me as \"rc.0\" or \"rc.6\" please!"
+		exit 1
+		;;
+  esac
+
+  # Kill all processes.
+  # INIT is supposed to handle this entirely now, but this didn't always
+  # work correctly without this second pass at killing off the processes.
+  # Since INIT already notified the user that processes were being killed,
+  # we'll avoid echoing this info this time around.
+  if [ "$1" != "fast" ]; then # shutdown did not already kill all processes
+    killall5 -15 
+      sleep 1
+    killall5 -9
+  fi
+
+  #Before unmounting file systems: Save the logs from the RAM disk
+  export RAM_LOG=`cat /etc/config.flags/ramlog`
+  if [ $RAM_LOG = "yes" ]; then
+      echo "Saving RAM logs to disk. This can take a while..."
+      remount w
+      mkdir -p /usr/log.persistent/
+      cp -rfp /var/log/* /usr/log.persistent/
+  fi
+
+
+  # Before unmounting file systems write a reboot or halt record to wtmp.
+  $command -w
+
+  echo "Unmounting local file systems."
+  umount -n -a -tnonfs,notmpfs
+
+  mount -n -o remount,ro /
+
+  # Now halt or reboot.
+  echo "$message"
+  sleep 1
+  [ ! -f /etc/fastboot ] && echo "On the next boot fsck will be FORCED."
+  $command -f

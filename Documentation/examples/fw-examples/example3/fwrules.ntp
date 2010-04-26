@@ -1,0 +1,15 @@
+#!/bin/sh
+#
+# NTP
+#
+
+echo "fwrules.ntp"
+
+# LOCAL input in
+ipchains -A input -p UDP -i $IF_IP -s $HADES ntp -d $IP ntp -j ACCEPT
+
+# FORWARD input in
+ipchains -A input -p UDP -i $IF_IP -s $HADES ntp -d $IP $HI -j ACCEPT
+
+# FORWARD input out
+ipchains -A input -p UDP -i $IF_IP2 -s $NET_IP2 $HI -d $HADES ntp -j ACCEPT

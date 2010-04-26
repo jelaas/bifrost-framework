@@ -1,0 +1,32 @@
+#!/bin/sh
+#
+# Deny internally spoofed packets and log them (Ingress Filtering, RFC2267)
+# Accepted packets are let through in fwrules.out.
+#
+
+source /filter/fw.conf
+echo "$0"
+
+ARG=$1
+if [ ${1:-none} = "none" ]; then
+    ARG="refresh"
+    ipchains -F ingress
+else
+    if [ $ARG != "refresh" -a $ARG != "purge" -a $ARG != "delete" ]; then
+        echo
+        echo "Usage:   $0 <refresh|purge|delete>"
+        echo "Example: $0 refresh    (default)"
+        echo
+        exit
+    fi
+fi
+case $ARG in ( refresh ) ACTION="-A"; ipchains -F ingress;;
+             ( purge )   ACTION="-D";;
+             ( delete )  ACTION="-D"; ipchains -F ingress; exit;;
+esac
+
+###------- Edit Rules Below -------###
+
+# Deny spoofed packets
+ipchains $ACTION ingress -i $IF_IP2 -s $NET_ALL -j DENY -l
+ipchains $ACTION ingress -i $IF_IP3 -s $NET_ALL -j DENY -l

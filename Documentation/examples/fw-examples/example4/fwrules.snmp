@@ -1,0 +1,16 @@
+#!/bin/sh
+#
+# SNMP
+#
+
+echo "fwrules.snmp"
+
+# LOCAL input in
+
+# Allow SNMP
+ipchains -A input -p UDP -i $IF_IP2 -s $ROBUR $HI -d $IP2 snmp:snmp-trap -j ACCEPT
+ipchains -A input -p UDP -i $IF_IP2 -s $TKARLSSON2 $HI -d $IP2 snmp:snmp-trap -j ACCEPT
+
+# Deny SNMP
+ipchains -A input -p UDP -d $IP snmp:snmp-trap -j REJECT
+ipchains -A input -p UDP -d $IP2 snmp:snmp-trap -j REJECT

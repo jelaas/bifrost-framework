@@ -1,0 +1,47 @@
+#!/bin/sh
+#
+# Filter for Nomad
+#
+
+source /filter/fw.conf
+echo "$0"
+
+ARG=$1
+if [ ${1:-none} = "none" ]; then
+    ARG="refresh"
+    iptables -F local_filter
+    iptables -F filter
+else
+    if [ $ARG != "refresh" -a $ARG != "purge" -a $ARG != "delete" ]; then
+	echo
+	echo "Usage:   $0 <refresh|purge|delete>"
+	echo "Example: $0 refresh    (default)"
+	echo
+	exit
+    fi
+fi
+case $ARG in ( refresh ) ACTION="-A"; iptables -F local_filter; iptables -F filter;;
+	     ( purge )   ACTION="-D";;
+	     ( delete )  ACTION="-D"; iptables -F local_filter; iptables -F filter; exit;;
+esac
+
+###------- Edit Rules Below -------###
+
+# FORWARD
+# eth1
+iptables $ACTION filter -p UDP -i $IF_IP1 -d $DNS1 --dport domain -j ACCEPT
+iptables $ACTION filter -p UDP -i $IF_IP1 -d $DNS2 --dport domain -j ACCEPT
+iptables $ACTION filter -i $IF_IP0 -d $NET_IP1 -j ACCEPT
+iptables -t nat $ACTION PREROUTING -p TCP -i $IF_IP1 --dport http -j DNAT --to 10.1.1.1:80
+
+# eth2
+#iptables $ACTION filter -p UDP -i $IF_IP2 -d $DNS1 --dport domain -j ACCEPT
+#iptables $ACTION filter -p UDP -i $IF_IP2 -d $DNS2 --dport domain -j ACCEPT
+#iptables $ACTION filter -i $IF_IP0 -d $NET_IP2 -j ACCEPT
+#iptables -t nat $ACTION PREROUTING -p TCP -i $IF_IP2 --dport http -j DNAT --to 10.1.1.1:80
+
+# eth3
+#iptables $ACTION filter -p UDP -i $IF_IP3 -d $DNS1 --dport domain -j ACCEPT
+#iptables $ACTION filter -p UDP -i $IF_IP3 -d $DNS2 --dport domain -j ACCEPT
+#iptables $ACTION filter -i $IF_IP0 -d $NET_IP3 -j ACCEPT
+#iptables -t nat $ACTION PREROUTING -p TCP -i $IF_IP3 --dport http -j DNAT --to 10.1.1.1:80

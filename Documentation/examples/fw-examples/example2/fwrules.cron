@@ -1,0 +1,37 @@
+#!/bin/sh
+#
+# CRON, using cronjobs to turn on/off filter rules.
+#
+# Example:
+# NetMeeting, controlled by a cronjob. Check the file
+# cron.fwrules.selene (where the rules set 'selene' is created)
+# for details as well as the crontab files.
+#
+# This file need to be in the beginning of the filter listing
+# so that other rules not will match packets before this one.
+#
+
+source /filter/fw.conf
+echo "$0"
+
+ARG=$1
+if [ ${1:-none} = "none" ]; then
+    ARG="refresh"
+    ipchains -F cron
+else
+    if [ $ARG != "refresh" -a $ARG != "purge" -a $ARG != "delete" ]; then
+        echo
+        echo "Usage:   $0 <refresh|purge|delete>"
+        echo "Example: $0 refresh    (default)"
+        echo
+        exit
+    fi
+fi
+case $ARG in ( refresh ) ACTION="-A"; ipchains -F cron;;
+             ( purge )   ACTION="-D";;
+             ( delete )  ACTION="-D"; ipchains -F cron; exit;;
+esac
+
+###------- Edit Rules Below -------###
+
+# doing nothing - all work performed in cron.fwrules.selene

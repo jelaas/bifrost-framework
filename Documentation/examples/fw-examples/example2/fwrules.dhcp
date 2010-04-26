@@ -1,0 +1,39 @@
+#!/bin/sh
+#
+# DHCP
+#
+# The 1:st rule is when the client makes a broadcast to ask for a setup.
+# The 2:nd rule is when the client has got the IP number but still doesn't
+# know the DHCP server's IP number.
+# The 3:rd rule is when the client downloads extra info from the DHCP server.
+#
+# The BOOTP/DHCP RFCs can describe this in greater detail.
+#
+
+source /filter/fw.conf
+echo "$0"
+
+ARG=$1
+if [ ${1:-none} = "none" ]; then
+    ARG="refresh"
+    ipchains -F dhcp
+else
+    if [ $ARG != "refresh" -a $ARG != "purge" -a $ARG != "delete" ]; then
+        echo
+        echo "Usage:   $0 <refresh|purge|delete>"
+        echo "Example: $0 refresh    (default)"
+        echo
+        exit
+    fi
+fi
+case $ARG in ( refresh ) ACTION="-A"; ipchains -F dhcp;;
+             ( purge )   ACTION="-D";;
+             ( delete )  ACTION="-D"; ipchains -F dhcp; exit;;
+esac
+
+###------- Edit Rules Below -------###
+
+# FORWARD input in
+ipchains $ACTION dhcp -p UDP -i $IF_IP2 -s $ALL_ZEROS bootpc -d $ALL_ONES bootps -j ACCEPT
+ipchains $ACTION dhcp -p UDP -i $IF_IP2 -s $NET_IP2 bootpc -d $ALL_ONES bootps -j ACCEPT
+ipchains $ACTION dhcp -p UDP -i $IF_IP2 -s $NET_IP2 bootpc -d $IP2 bootps -j ACCEPT

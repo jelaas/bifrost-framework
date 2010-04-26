@@ -1,0 +1,15 @@
+# Format as in /etc/iftab, ifrename's config file
+#
+#eth0      Link encap:Ethernet  HWaddr 00:0E:0C:C3:3A:74
+#eth1      Link encap:Ethernet  HWaddr 00:0E:0C:C3:3A:75
+#eth2      Link encap:Ethernet  HWaddr 00:0E:0C:C3:3A:76
+#eth3      Link encap:Ethernet  HWaddr 00:0E:0C:C3:3A:77
+#eth4      Link encap:Ethernet  HWaddr 00:11:43:DA:51:28
+#eth5      Link encap:Ethernet  HWaddr 00:11:43:DA:51:29
+
+eth0    mac 00:11:43:DA:51:28
+eth1    mac 00:11:43:DA:51:29
+eth2    mac 00:0E:0C:C3:3A:74
+eth3    mac 00:0E:0C:C3:3A:75
+eth4    mac 00:0E:0C:C3:3A:76
+eth5    mac 00:0E:0C:C3:3A:77

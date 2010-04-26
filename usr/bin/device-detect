@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# Jens Låås jens.laas@its.uu.se 2009
+CFG=/etc/device-detect.d
+
+if [ -z "$1" ]; then
+    if [ -d "$CFG" ]; then
+	for d in $CFG/*.conf EOF; do
+	    [ EOF != "$d" ] && [ -f "$d" ] && RULES="$RULES $d"
+	done
+    fi
+else
+    URULES=${1}
+    if [ ! -f "$URULES" ]; then
+	if [ ! -d "$URULES" ]; then
+	    echo "$URULES does not exist!"
+	    exit 1
+	fi
+	if [ -d "$URULES" ]; then
+	    for d in $URULES/*.conf EOF; do
+		[ EOF != "$d" ] && [ -f "$d" ] && RULES="$RULES $d"
+	    done
+	fi
+    fi
+fi
+
+if [ -z "${RULES/ /}" ]; then
+    echo "device-detect: No rules found!"
+    exit 1
+fi
+
+function devdetect {
+    while read L; do
+	i=0
+	while [ "${match[i]}" ]; do
+	    if echo $L|grep -q ${flags[i]} "${match[i]}"; then
+		echo ${order[i]}:${result[i]:-ERR}
+		break
+	    fi
+	    ((i++))
+	done
+    done
+}
+
+n=0
+for RULE in $RULES; do
+    exec 3<$RULE
+    while read -u 3 R ; do
+	if [ "${R:0:1}" = "#" ]; then
+	    continue
+	fi
+	echo $R|grep -qs '.*:.*:.' || continue
+	order[n]=$n
+	flags[n]=$(echo $R|cut -d : -f 1)
+	match[n]=$(echo $R|cut -d : -f 2)
+    result[n++]=$(echo $R|cut -d : -f 3)
+    done
+    exec 3>&-
+done
+
+(lsusb;lspci)|devdetect|sort -n|uniq|cut -d : -f 2

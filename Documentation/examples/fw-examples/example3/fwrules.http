@@ -1,0 +1,14 @@
+#!/bin/sh
+#
+# HTTP access
+#
+
+echo "fwrules.http"
+
+# FORWARD input in
+ipchains -A input -p TCP -i $IF_IP ! -y -s $NET_ALL http -d $IP $HI -j ACCEPT
+ipchains -A input -p TCP -i $IF_IP ! -y -s $NET_ALL ssl -d $IP $HI -j ACCEPT
+
+# FORWARD input out
+ipchains -A input -p TCP -i $IF_IP2 -s $NET_IP2 $HI -d $NET_ALL http -j ACCEPT
+ipchains -A input -p TCP -i $IF_IP2 -s $NET_IP2 $HI -d $NET_ALL ssl -j ACCEPT

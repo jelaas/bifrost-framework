@@ -1,0 +1,34 @@
+#!/bin/sh
+#
+# HTTP access
+#
+
+source /filter/fw.conf
+echo "$0"
+
+ARG=$1
+if [ ${1:-none} = "none" ]; then
+    ARG="refresh"
+    ipchains -F http
+else
+    if [ $ARG != "refresh" -a $ARG != "purge" -a $ARG != "delete" ]; then
+	echo
+	echo "Usage:   $0 <refresh|purge|delete>"
+	echo "Example: $0 refresh    (default)"
+	echo
+	exit
+    fi
+fi
+case $ARG in ( refresh ) ACTION="-A"; ipchains -F http;;
+	     ( purge )   ACTION="-D";;
+	     ( delete )  ACTION="-D"; ipchains -F http; exit;;
+esac
+
+###------- Edit Rules Below -------###
+
+# FORWARD input in
+#ipchains $ACTION http -p TCP -i $IF_IP -s $NET_ALL $HI -d $TKARLSSON2 http -j ACCEPT
+ipchains $ACTION http -p TCP -i $IF_IP ! -y -s $NET_ALL http -d $TKARLSSON2 $HI -j ACCEPT
+
+#ipchains $ACTION http -p TCP -i $IF_IP -s $NET_ALL $HI -d $TKARLSSON2 ssl -j ACCEPT
+ipchains $ACTION http -p TCP -i $IF_IP ! -y -s $NET_ALL ssl -d $TKARLSSON2 $HI -j ACCEPT

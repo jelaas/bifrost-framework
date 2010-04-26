@@ -1,0 +1,11 @@
+#!/bin/bash
+
+function killproc {
+    [ -f /var/run/${1}.pid ] && read pid < /var/run/${1}.pid && kill "$pid" || killall "$1"
+}
+
+# Start the dnsmasq server
+[ "$1" = start ] && [ -f /usr/sbin/dnsmasq ] && taskset -c 0 /usr/sbin/dnsmasq && exit 0
+[ "$1" = stop ] && [ -f /usr/sbin/dnsmasq ] && killproc dnsmasq && exit 0
+
+exit 1

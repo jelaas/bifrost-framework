@@ -1,0 +1,1 @@
+export NTPSERVER=$( gawk '/^server/ {print $2; exit;}' /etc/ntp.conf )

@@ -1,0 +1,43 @@
+#!/bin/sh
+#
+# ICMP
+#
+
+source /filter/fw.conf
+echo "$0"
+
+ARG=$1
+if [ ${ARG:-none} = "none" ]; then
+    ARG="refresh"
+    iptables -F local_icmp
+    iptables -F f_icmp
+else
+    if [ $ARG != "refresh" -a $ARG != "purge" -a $ARG != "delete" ]; then
+        echo
+        echo "Usage:   $0 <refresh|purge|delete>"
+        echo "Example: $0 refresh    (default)"
+        echo
+        exit
+    fi
+fi
+case $ARG in ( refresh ) ACTION="-A"; iptables -F local_icmp; iptables -F f_icmp;;
+             ( purge )   ACTION="-D";;
+             ( delete )  ACTION="-D"; iptables -F local_icmp; iptables -F f_icmp; exit;;
+esac
+
+###------- Edit Rules Below -------###
+
+# LOCAL
+#iptables $ACTION local_icmp -p ICMP $LIMIT2 --icmp-type router-advertisement -j LOG --log-prefix "ICMP LO: "
+iptables $ACTION local_icmp -p ICMP --icmp-type router-advertisement -j DROP
+
+#iptables $ACTION local_icmp -p ICMP $LIMIT2 --icmp-type router-solicitation -j LOG --log-prefix "ICMP LO: "
+iptables $ACTION local_icmp -p ICMP --icmp-type router-solicitation -j ACCEPT
+
+
+# FORWARD
+#iptables $ACTION f_icmp -p ICMP $LIMIT2 --icmp-type router-advertisement -j LOG --log-prefix "ICMP FWD: "
+iptables $ACTION f_icmp -p ICMP --icmp-type router-advertisement -j DROP
+
+#iptables $ACTION f_icmp -p ICMP $LIMIT2 --icmp-type router-solicitation -j LOG --log-prefix "ICMP FWD: "
+iptables $ACTION f_icmp -p ICMP --icmp-type router-solicitation -j DROP

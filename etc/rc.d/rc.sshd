@@ -1,0 +1,14 @@
+#!/bin/bash
+# SSH daemon, needs full path to exec
+
+function killproc {
+    [ -f /var/run/${1}.pid ] && read pid < /var/run/${1}.pid && kill "$pid" || killall "$1"
+}
+
+[ "$1" = start ] && [ -f /usr/sbin/sshd ] && taskset -c 0 /usr/sbin/sshd && exit 0
+[ "$1" = stop ] && [ -f /usr/sbin/sshd ] && killproc sshd && exit 0
+
+exit 1
+
+# /usr/sbin/sshd -u 0
+

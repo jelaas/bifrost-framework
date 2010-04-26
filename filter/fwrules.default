@@ -1,0 +1,11 @@
+#!/bin/sh
+
+
+#-- this is just a "space holder" file, please update
+#-- it for your own environment before putting the box
+#-- in production.			(emilp, 2007-02-16)
+
+echo " W:"
+echo " W: no filter rules configured, please edit /filter/fwrules"
+echo " W:"
+

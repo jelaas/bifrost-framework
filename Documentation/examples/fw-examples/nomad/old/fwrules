@@ -1,0 +1,65 @@
+#!/bin/sh
+#
+# Main file for firewall rules, using ipchains.
+# Written by Tom Karlsson 1999-09-17.
+#
+
+ipchains --version
+echo "fwrules"
+
+#------------------
+# Flush and delete
+#
+ipchains -F
+ipchains -X
+
+#------------------
+# Set default policy
+#
+ipchains -P input ACCEPT
+ipchains -P forward REJECT
+ipchains -P output ACCEPT
+
+#------------------
+# Local host definitions
+#
+export HOST="nomad"
+export IP="10.10.96.3"
+export IP2="10.10.96.66"
+export IF_IP="eth0"
+export IF_IP2="eth1"
+export BC="255.255.255.255"
+export DBC="130.237.96.255"
+
+#------------------
+# Special host addresses used by DHCP
+#
+export ALL_ZEROS="0.0.0.0/32"
+export ALL_ONES="255.255.255.255/32"
+
+#------------------
+# Ports
+#
+export HI="1024:"
+export LO=":1023"
+
+#------------------
+# Networks
+#
+export NET_ALL="0/0"
+export NET_IP="10.10.96.0/24"
+export NET_IP2="10.10.96.64/26"
+
+#------------------
+# Hosts
+#
+
+#------------------
+# Printers
+#
+
+#------------------
+# Call the other modules
+#
+/filter/fwrules.forward
+/filter/fwrules.icmp

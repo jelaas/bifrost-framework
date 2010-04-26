@@ -1,0 +1,53 @@
+#
+# DHCP configuration for static IPs. Written by Tom Karlsson 020207.
+# An example file for the DHCP server.
+#
+
+# Common configurations -----------------------------------
+
+server-identifier dhcp.domain.se;
+  option domain-name-servers 10.10.1.1, 10.10.2.2;
+  server-name "dhcp.domain.se";
+  default-lease-time 604800;
+  max-lease-time 604800;
+  ddns-update-style none;
+
+
+# Subnet definitions for each network interface.
+
+subnet 10.23.66.0 netmask 255.255.255.0 {
+  option domain-name "domain.se";
+  option routers 10.23.66.2;
+  option subnet-mask 255.255.255.0;
+  option broadcast-address 255.255.255.255;
+  option ip-forwarding false;
+  option non-local-source-routing false;
+  option netbios-node-type 8;
+  option netbios-scope "JH457GZ";
+  option netbios-name-servers ns.domain.se;
+  option ntp-servers 10.23.99.2;
+}
+
+# Host configurations -----------------------------------
+# One entry per machine. Use the MAC address as identifier.
+
+# pc1 - PC Pentium
+host pc1 {
+  hardware ethernet 00:00:c0:e9:5f:2f;
+  option dhcp-client-identifier 00:00:c0:e9:5f:2f;
+  fixed-address 10.23.66.27;
+}
+
+# printer2 - HP LaserJet Printer
+host printer2 {
+  hardware ethernet 08:00:09:1c:a1:ae;
+  option dhcp-client-identifier 08:00:09:1c:a1:ae;
+  fixed-address 10.23.66.33;
+}
+
+# xterm - An X-Terminal
+host xterm {
+  hardware ethernet 00:80:94:f4:27:99;
+  option dhcp-client-identifier 00:80:94:f4:27:99;
+  fixed-address 10.23.66.55;
+}

@@ -1,0 +1,26 @@
+# NTP configuration file (ntp.conf)
+
+# Machine _must_ be in /etc/hosts if DNS has not been activated
+# Otherwise use IP number instead (recommended anyway for routers)
+server Time1.Stupi.SE prefer
+server Time2.Stupi.SE
+server sunic.sunet.se
+
+stratum 2
+
+#restrict default ignore
+#precision -18                  # clock reading precision (usec)
+driftfile /tmp/ntp.drift	# path for drift file
+statsdir /tmp/                  # directory for statistics files
+#statistics loopstats peerstats clockstats
+#filegen loopstats file loopstats type day enable
+#filegen peerstats file peerstats type day enable
+#filegen clockstats file clockstats type day enable
+disable monitor stats
+
+#keys /usr/local/bin/ntp.keys   # path for keys file
+#trustedkey 1 2 3 4 14 15       # define trusted keys
+#requestkey 15                  # key (7) for accessing server variables
+#controlkey 15                  # key (6) for accessing server variables
+#authdelay 0.000072             # authentication delay (SPARC4c/65 SS1+ DES)
+#authdelay 0.000159             # authentication delay (SPARC4c/65 SS1+ MD5)

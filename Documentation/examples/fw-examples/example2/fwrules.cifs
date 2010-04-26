@@ -1,0 +1,37 @@
+#!/bin/sh
+#
+# CIFS services
+#
+
+source /filter/fw.conf
+echo "$0"
+
+ARG=$1
+if [ ${1:-none} = "none" ]; then
+    ARG="refresh"
+    ipchains -F cifs
+else
+    if [ $ARG != "refresh" -a $ARG != "purge" -a $ARG != "delete" ]; then
+        echo
+        echo "Usage:   $0 <refresh|purge|delete>"
+        echo "Example: $0 refresh    (default)"
+        echo
+        exit
+    fi
+fi
+case $ARG in ( refresh ) ACTION="-A"; ipchains -F cifs;;
+             ( purge )   ACTION="-D";;
+             ( delete )  ACTION="-D"; ipchains -F cifs; exit;;
+esac
+
+###------- Edit Rules Below -------###
+
+# FORWARD cifs in
+ipchains $ACTION cifs -p TCP -i $IF_IP -s $SLUGER 139 -d $NET_IP2 $HI -j ACCEPT
+ipchains $ACTION cifs -p UDP -i $IF_IP -s $SLUGER 53 -d $NET_IP2 137 -j ACCEPT
+
+ipchains $ACTION cifs -p TCP -i $IF_IP -s $PINUS 139 -d $NET_IP2 $HI -j ACCEPT
+ipchains $ACTION cifs -p UDP -i $IF_IP -s $PINUS 53 -d $NET_IP2 137 -j ACCEPT
+
+ipchains $ACTION cifs -p TCP -i $IF_IP -s $VPL 139 -d $NET_IP2 $HI -j ACCEPT
+ipchains $ACTION cifs -p UDP -i $IF_IP -s $VPL 53 -d $NET_IP2 137 -j ACCEPT

@@ -1,0 +1,15 @@
+#!/bin/sh
+#
+# Clear all firewall rules and make sure to open up
+# the input and forward rule set.
+#
+source /filter/fw.conf
+
+iptables -F
+iptables -X
+iptables -P INPUT ACCEPT
+iptables -P FORWARD ACCEPT
+iptables -t nat -F
+iptables -t nat -A POSTROUTING -o $IF_IP0 -s $NET_IP1 -j SNAT --to $IP0
+
+echo "INPUT and FORWARD are now set to ACCEPT and Source NAT opened"

@@ -1,0 +1,33 @@
+
+argus			= start the Argus network logger
+conntrack		= use netfilter connection tracking etc
+cron			= start cron daemon
+dhcpd			= start DHCP daemon
+dummy0.nic		= set up dummy network interface
+e1000			= use the e1000 Gigabit driver
+eth*.nic		= setup for network interfaces
+execlog			= module that will logg all exec activities (*)
+fwrules			= activate filter rules
+gated			= start Gated routing daemon
+http			= start Apache+OpenSSL server for Bifrost Nomad
+icmp-rate-limit		= will set a rate limit on ICMP traffic
+ifstat2			= interface statistics daemon
+ignore-icmp-bc		= ignore ICMP broadcasts and multicasts
+inetd			= start inetd daemon
+ip-forward		= set to 'yes' for routing or 'no' for no routing
+local-port-range	= will increase the local port range to 32768-61000
+ntp			= start NTP daemon
+qos-test		= QoS experiments (just for testing)
+short-defrag-time	= Set a shorter defrag timing
+slow-keyboard		= set the keyboard to slow mode
+snmpd			= start SNMP daemon
+snort			= start the Snort network logger
+sshd			= start SSH daemon
+swedish-keyboard	= use Swedish keyboard instead of english
+syslog-ng		= use Syslog Next Gen. (otherwise standard syslog)
+tulip			= use the tulip network driver
+zebra			= start Zebra routing daemon
+
+* It may cause havoc to your system if it collides with other syscalls,
+  be careful with this one!
+

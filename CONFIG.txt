@@ -1,0 +1,63 @@
+
+		 Bifrost Network Project
+
+About the Configuration, Directories and Files
+
+When the Bifrost distribution is started for the first time, the
+script /sbin/configure is used to setup the machine in a simple way.
+For more advanced usage, one will have to edit separate configuration
+files and check that everything is correctly done...
+
+Normally the flash disk is mounted read-only and to be able to edit
+any configuration it must be remounted. You can for this purpose use
+'remount w' and 'remount r' respectively.
+
+Some programs and scripts to aid in the setup process:
+
+/sbin/configure   For a fast setup of interfaces, IP-numbers, passwords
+		  and such. It stores some of the default values in
+		  /etc/.config and /etc/.config.old so they may be used
+		  again at a later time.
+
+/sbin/chkconfig   With no arguments given, it will display the current
+		  setup - daemons started at boot time, routing options,
+		  active interfaces and some other stuff as well.
+		  Given parameters, it can be used to turn on and off
+		  these options.
+
+/etc/rc.d/rc.interfaces	Is used to bring up or down interfaces. It can
+			also show the current setup of the interface,
+			with the 'show' option.
+
+
+Directories and Files:
+
+/etc		  Stores a lot of config files (for most of the daemons)
+		  and includes a number of important sub directories.
+
+/etc/config.flags Contain variables used by /sbin/chkconfig and the rc
+		  startup scripts. These files/variables say either yes
+		  or no. Chkconfig can be used to control these flags.
+		  Read the /etc/config.flags/.README file for further info.
+
+/etc/config.data  Contain files with environment variables used by
+		  the rc startup scripts, such as IP-numbers, default
+		  routes and different network options. These files
+		  can be edited by hand using 'vi' or 'edit'.
+		  Read the /etc/config.data/.README file for further info.
+
+/etc/rc.d	  All the rc scripts are located here. They are mostly
+		  data driven by the config and options files, but can
+		  be edited by hand if needed. Read the /etc/rc.d/README
+		  file for further info.
+
+/filter		  Firewall (and router) filters should be stored here.
+		  Examples can be found in the /fw-examples directory.
+
+/contrib	  Contributed scripts and programs.
+
+/opt		  Optional Bifrost packages, like Emacs, sniffers and
+		  network loggers, snmp, Zebra, Nomad and such should
+		  be installed here (binaries, configuration files and
+		  dedicated libraries if possible).
+

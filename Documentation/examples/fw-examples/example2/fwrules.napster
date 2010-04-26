@@ -1,0 +1,36 @@
+#!/bin/sh
+#
+# Napster Port blocking - only pure SYN-packets, though.
+#
+
+source /filter/fw.conf
+echo "$0"
+
+ARG=$1
+if [ ${1:-none} = "none" ]; then
+    ARG="refresh"
+    ipchains -F napster
+else
+    if [ $ARG != "refresh" -a $ARG != "purge" -a $ARG != "delete" ]; then
+        echo
+        echo "Usage:   $0 <refresh|purge|delete>"
+        echo "Example: $0 refresh    (default)"
+        echo
+        exit
+    fi
+fi
+case $ARG in ( refresh ) ACTION="-A"; ipchains -F napster;;
+             ( purge )   ACTION="-D";;
+             ( delete )  ACTION="-D"; ipchains -F napster; exit;;
+esac
+
+###------- Edit Rules Below -------###
+
+# FORWARD input out
+ipchains $ACTION napster -p TCP -i $IF_IP2 -y -s $NET_IP2 -d $NET_B $NAP1 -j ACCEPT
+ipchains $ACTION napster -p TCP -i $IF_IP2 -y -s $NET_IP2 -d $NET_B $NAP2 -j ACCEPT
+ipchains $ACTION napster -p TCP -i $IF_IP2 -y -s $NET_IP2 -d $NET_B $NAP3 -j ACCEPT
+
+ipchains $ACTION napster -p TCP -i $IF_IP2 -y -s $NET_IP2 -d $NET_ALL $NAP1 -j REJECT -l
+ipchains $ACTION napster -p TCP -i $IF_IP2 -y -s $NET_IP2 -d $NET_ALL $NAP2 -j REJECT -l
+ipchains $ACTION napster -p TCP -i $IF_IP2 -y -s $NET_IP2 -d $NET_ALL $NAP3 -j REJECT -l

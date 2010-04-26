@@ -1,0 +1,109 @@
+mount,umount
+crond, crontab
+lsusb
+usb.ids.gz
+nstat
+init
+killall5
+shutdown
+halt
+last
+readprofile
+curl
+loadkeys
+runlevel
+ipgrab
+iptables
+ipmask
+rdev
+inetd
+rm mii-diag, tulip-diag
+rm etc/opiekeys usr/bin/passwd.opie usr/bin/opiekey bin/login.opie
+rm ksyms
+rm sbin/voff 
+rm sbin/watchdog 
+rtacct
+rm usr/bin/ldd usr/bin/lddlibc4 
++getpcaps
++dialog
++allcaps
++use allcaps in rc.S to detect if we are running inside a container
+eth-detect.conf: added 82572EI
+eth-detect.conf: added 82546GB
+eth-detect.conf: added various Realtek Gb-nics
++use allcaps in rc.M
++sfdisk
++capsh
+-allcaps
+Fixed login.defs to not complain
+-sysvinit CAPv3 fix
+rm usr/sbin/wu.ftpd 
+arpwatch
+remount
+mkdir etc/eth-detect.d
+mkdir etc/device-detect.d
+rc.S mount /dev before fsck
+blockdev-populate
+rc.S start blockdev-populate
++arp-monitor
+eth-detect: new config /etc/eth-detect.d, USB support
++device-detect
+rm /etc/HOSTNAME
++pwconv
+.default versions of passwd, shadow, group, fstab
+rc.S copy default versions if needed
+rc.M dnsmasq
+/etc/.notconfigured changed to /etc/.configured
+rc.S default version of hosts.allow
+fwrules.default
+kbdrate
+- argus, snort, http from rc.M
+- execlog from rc.M
+arping2
+ eth-detect: empty conf line buggfix
+ device-detect: empty conf line buggfix
++burnK7,burnP6,burnMMX: from cpuburn
+lock (vlock)
+schedlat 1.0
+rm syslog-ng
+whois
+loop
+time
+rm *.so*
+eth-affinity 1.1.0
+scp executable by all
+ifinfo
+rc.<service> moved out of rc.M
+
+gzip/zcat updated, gunzip/zless added	-- NOTE: built with uclibc, which differs from glibc
+					-- NOTE: regarding  __fpending  on wide streams
+
+defaults for some config.flags
+added "taskset -c 0" to rc.scripts
+bin32/ethtool bin64/ethtool DOM support
+setsid
+fixed syslogd
+fixed rc.syslog
+fixed crond
+/etc/mtab link to /proc/mounts
+buggfix eth-detect
+/proc/bus/usb till fstab
+fixed eth-detect, device-detect yet again..
+rc.S add hosts.default
+blockdev-populate 1.2
+usbdev-populate
+revert usbdev-populate
+Release 6.1-beta1
+run all ttys on cpu 0
+moved /etc/*.default to /etc/config.defaults
+sshd: 5.3, agains openssl 0.9.8l, fixed tcpwrappers
++losetup
+fixed bc. -l now works
++ dmidecode (bios info reading)
++seq (coreutils)
+eth-affinity 1.2.3
+ifinfo 1.4 (64bit stat support)
+klogd: fixed open file leak
++flowctl - script for turning off flowctrl on all devs
++numactl
++ /sbin/brctl

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+kill `cat /var/run/dhcpd.pid`
+/etc/rc.d/rc.dhcp

@@ -1,0 +1,52 @@
+
+Bifrost 6.0  (Bifrost Software Distribution)
+
+Some of the news.
+
+ftp://robur.slu.se:/pub/Linux/bifrost/v6/bifrost-6.0rc6.tgz
+
+LABEL=bifrost is used for mounting and fsck of rootfs.
+
+VLAN scripts are added. Contribution by Pehr Söderman <Pehrs@kth.se>
+See /etc/docs/vlan-interfaces.txt.
+
+New log possibilities, framework for coping logs between ramdisk and
+USB-storage. See config.flags/ramlog. Also from Pehr.
+
+Possible to control size of ramdisk. See config.data/tmpsize
+
+Many utilities are updated and many are built with uclibc. There are new 
+/bin64 and /bin32 directories included in PATH according to kernel arch. 
+Scripts are cleaned up.
+
+Kernel 2.6.29-r2 with many patches configured for 64-bit NUNA arch. Tested 
+with Opteron and Intel Duo. So far we only support 64-bit kernel.
+
+Kernel has multiqueue support for routing/forwarding. The driver supporting
+multiqueue is ixgbe (Intel 10g 82598 chip) niu (SUN neptune 10g and 1g board)
+and the igb (Intel 82576 chip) drivers.
+
+Automatic driver module loading via PCI probing. See /etc/eth-detect.conf
+(you can of course add needed tags). Modpobe follows eth-detect.conf order.
+
+eth-affinity to setup IRQ affinity among multiqueue capable NIC's. Normally 
+run at start.
+
+ifstat2 is improved and have defaults for 10g.
+
+'zile' --  A new emacs like editor.
+'edit' now replaced with nano.
+
+Some emerging support for TCAM classifier support in the niu driver via  
+ethtool. (Note. A byte order bug for IP/Ports etc)
+
+pktgen can be configured to use multiqueue NIC's.
+
+An optional oprofile package can profile a running system at very little cost.
+Very useful for troubleshooting and network and performance understanding.
+
+And bugs of course
+
+Enjoy
+Robert, Jens, Emil
+

@@ -1,0 +1,47 @@
+#!/bin/sh
+#
+# Explicit logging. The REJECT jump is not necessary,
+# but will appear as REJECT in the log which is better
+# than just a plain logged entry.
+# We don't allow the traffic to get through and therefor
+# it is more efficient to REJECT it here than to let it parse
+# the rest of the rules.
+# As an example, the fwrules.login contains log rules without
+# REJECT or ACCEPT just to get a log on each new connection.
+#
+
+echo "fwrules.log"
+
+# Log all high port connections
+ipchains -A input -p TCP -i $IF_IP -y -d $NET_IP2 $HI -j REJECT -l
+ipchains -A input -p TCP -i $IF_IP2 -y -d $NET_ALL $HI -j REJECT -l
+
+# POP3
+ipchains -A input -p TCP -i $IF_IP -y -s $NET_ALL -d $IP pop3 -j REJECT -l
+ipchains -A input -p TCP -i $IF_IP2 -y -s $NET_IP2 -d $NET_ALL pop3 -j REJECT -l
+
+# Imap2
+ipchains -A input -p TCP -i $IF_IP -y -s $NET_ALL -d $IP imap2 -j REJECT -l
+ipchains -A input -p TCP -i $IF_IP2 -y -s $NET_IP2 -d $NET_ALL imap2 -j REJECT -l
+
+# Imap3
+ipchains -A input -p TCP -i $IF_IP -y -s $NET_ALL -d $IP imap3 -j REJECT -l
+ipchains -A input -p TCP -i $IF_IP2 -y -s $NET_IP2 -d $NET_ALL imap3 -j REJECT -l
+
+# ICQ
+ipchains -A input -p UDP -i $IF_IP -s $NET_ALL -d $IP $ICQ -j REJECT -l
+ipchains -A input -p UDP -i $IF_IP2 -s $NET_IP2 -d $NET_ALL $ICQ -j REJECT -l
+
+# NetBus
+ipchains -A input -p TCP -i $IF_IP -y -s $NET_ALL -d $IP $NETBUS -j REJECT -l
+ipchains -A input -p TCP -i $IF_IP2 -y -s $NET_IP2 -d $NET_ALL $NETBUS -j REJECT -l
+ipchains -A input -p TCP -i $IF_IP -y -s $NET_ALL -d $IP $NETBUS2 -j REJECT -l
+ipchains -A input -p TCP -i $IF_IP2 -y -s $NET_IP2 -d $NET_ALL $NETBUS2 -j REJECT -l
+
+# BackOrifice
+ipchains -A input -p TCP -i $IF_IP -y -s $NET_ALL -d $IP $BO -j REJECT -l
+ipchains -A input -p TCP -i $IF_IP2 -y -s $NET_IP2 -d $NET_ALL $BO -j REJECT -l
+
+# Finger
+ipchains -A input -p TCP -i $IF_IP -y -s $NET_ALL -d $IP finger -j REJECT -l
+ipchains -A input -p TCP -i $IF_IP2 -y -s $NET_IP2 -d $NET_ALL finger -j REJECT -l

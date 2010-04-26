@@ -1,0 +1,11 @@
+Load balancing have been tested on a Bifrost firewall with
+static routing. One external ATM interface and four internal
+Ethernet interfaces working in parallel. Note that it may be
+impossible to use this feature on a router with full
+Internet routing table (or even multiple tables), due to
+memory consumption. That has not been tested at all...
+
+For a simple network with point to point connections however,
+it works just fine. Take care when designing firewall filters.
+Example networking config can be found in /etc/rc.d/rc.inet.routes
+and in the load-balancing.txt "HOWTO" file.

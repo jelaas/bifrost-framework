@@ -1,0 +1,8 @@
+#!/bin/bash
+# Inetd daemon
+
+[ "$1" = start ] && [ -f /usr/sbin/inetd ] && taskset -c 0 /usr/sbin/inetd && exit 0
+[ "$1" = stop ] && [ -f /usr/sbin/inetd ] && killall inetd && exit 0
+
+exit 1
+

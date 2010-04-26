@@ -1,0 +1,12 @@
+#!/bin/bash
+# Vixie Cron
+
+function killproc {
+    [ -f /var/run/${1}.pid ] && read pid < /var/run/${1}.pid && kill "$pid" && killall "$1"
+}
+
+
+[ "$1" = start ] && [ -f /usr/sbin/crond ] && taskset -c 0 /usr/sbin/crond && exit 0
+[ "$1" = stop ] && [ -f /usr/sbin/crond ] && killproc crond && exit 0
+
+exit 1

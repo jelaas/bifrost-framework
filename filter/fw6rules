@@ -1,0 +1,51 @@
+#!/bin/sh
+#
+# Main file for firewall rules, using ip6tables.
+# Written by Tom Karlsson 2004-02-18.
+#
+# Parameters to fwrules are:
+#
+# refresh = Initialize or reinitialize the complete set of rules (default).
+#           This will clear all statistics.
+# purge   = Delete the rules declared in the fwrules files,
+#           but leave all manually added rules.
+# delete  = Delete all rules.
+#
+. /etc/config.data/kernel
+
+#------------------
+# Filter modules loaded in rc.inet
+#
+#insmod /lib/modules/$KERNEL/kernel/net/ipv6/netfilter/ip6table_filter.ko 2> /dev/null
+
+source /filter/fw6.conf
+
+if [ ${1:-none} = "none" ]; then
+    ACTION="refresh"
+    ip6tables -F
+    ip6tables -X
+else
+    if [ $1 != "refresh" -a $1 != "purge" -a $1 != "delete" ]; then
+	echo
+	echo "Usage:   $0 <refresh|purge|delete>"
+	echo "Example: $0 refresh    (default)"
+	echo
+	exit
+    fi
+fi
+
+case $1 in ( refresh ) ACTION=refresh; ip6tables -F; ip6tables -X;;
+	   ( purge )   ACTION=purge;;
+	   ( delete )  ACTION=delete; ip6tables -F; ip6tables -X; exit;;
+esac
+
+ip6tables --version
+echo
+echo "$0"
+
+#------------------
+# Set default policy
+#
+ip6tables -P INPUT DROP
+ip6tables -P FORWARD DROP
+ip6tables -P OUTPUT DROP

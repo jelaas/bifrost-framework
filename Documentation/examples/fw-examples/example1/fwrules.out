@@ -1,0 +1,39 @@
+#!/bin/sh
+#
+# Allow all packets out from Tkarlsson2
+#
+
+source /filter/fw.conf
+echo "$0"
+
+ARG=$1
+if [ ${1:-none} = "none" ]; then
+    ARG="refresh"
+    ipchains -F out
+else
+    if [ $ARG != "refresh" -a $ARG != "purge" -a $ARG != "delete" ]; then
+	echo
+	echo "Usage:   $0 <refresh|purge|delete>"
+	echo "Example: $0 refresh    (default)"
+	echo
+	exit
+    fi
+fi
+case $ARG in ( refresh ) ACTION="-A"; ipchains -F out;;
+	     ( purge )   ACTION="-D";;
+	     ( delete )  ACTION="-D"; ipchains -F out; exit;;
+esac
+
+###------- Edit Rules Below -------###
+
+# FORWARD input out
+ipchains $ACTION out -i $IF_IP2 -s $TKARLSSON2 -j ACCEPT
+ipchains $ACTION out -i $IF_IP3 -s $TKARLSSON2 -j ACCEPT
+ipchains $ACTION out -i $IF_IP4 -s $TKARLSSON2 -j ACCEPT
+ipchains $ACTION out -i $IF_IP5 -s $TKARLSSON2 -j ACCEPT
+
+# Deny the rest
+ipchains $ACTION out -i $IF_IP2 -s $NET_ALL -j DENY -l
+ipchains $ACTION out -i $IF_IP3 -s $NET_ALL -j DENY -l
+ipchains $ACTION out -i $IF_IP4 -s $NET_ALL -j DENY -l
+ipchains $ACTION out -i $IF_IP5 -s $NET_ALL -j DENY -l

@@ -1,0 +1,38 @@
+#!/bin/bash
+#
+# Starting the NTP client/server. The client will get time from
+# an external source and act as a server to the internal network.
+#
+
+# Machine _must_ be in /etc/hosts if DNS has not been activated.
+# If no DNS, use IP number instead (recommended anyway)
+
+function killproc {
+    [ -f /var/run/${1}.pid ] && read pid < /var/run/${1}.pid && kill "$pid" || killall "$1"
+}
+
+if [ "$1" = start ]; then
+# Set the NTP server in this file...
+    . /etc/config.data/ntp
+    
+    rm -f /tmp/ntp.drift
+    touch /tmp/ntp.drift
+    cat >> /tmp/ntp.drift<<EOF
+0.0
+EOF
+
+# Delay to let internet routing get stable
+    sleep 60
+
+    if [ -f /usr/bin/ntpd ]; then
+	/usr/bin/ntpdate $NTPSERVER
+	taskset -c 0 /usr/bin/ntpd -c /etc/ntp.conf -p /var/run/ntpd.pid
+    fi
+    
+# Sync the hardware clock
+    hwclock --utc --systohc --noadjfile
+fi
+
+[ "$1" = stop ] && [ -f /usr/bin/ntpd ] && killproc ntpd && exit 0
+
+exit 1

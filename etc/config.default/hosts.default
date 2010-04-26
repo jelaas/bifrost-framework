@@ -1,0 +1,17 @@
+127.0.0.1  localhost
+
+# Bifrost Nomad web server IP
+10.1.1.1   nomad
+
+# Default NTP servers
+192.36.143.150 Time1.Stupi.SE
+192.36.143.151 Time2.Stupi.SE
+192.36.125.2 sunic.sunet.se
+
+::1     ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+ff02::3 ip6-allhosts
+

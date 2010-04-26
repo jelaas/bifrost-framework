@@ -1,0 +1,147 @@
+Load balancing using multipaths (patch version: 5)
+==================================================
+
+Contact Guus Sliepen <sliepen@phys.uu.nl> if you need help, want to know
+more, have remarks or further idea's with relation to this.
+
+Intro
+-----
+
+If you have multiple physical network links to another computer, and you want
+some kind of load balancing, you can now do so. Please note that this only
+applies to IPv4 traffic, not for IPX, IPv6 or any other protocol (yet).
+
+In general, this patch cannot be used if you have several (cable)modems
+connected to an ISP and you want to balance your traffic over each of them.
+See the Notes section below for possible solutions.
+
+Needed
+-----
+
+* LATEST iproute package from ftp://ftp.inr.ac.ru/ip-routing/
+* CONFIG_IP_ROUTE_MULTIPATH enabled in kernel configuration (it's in
+  Networking options, below the Advanced Router option you'll have to enable
+  too)
+* Ofcourse you must also have patched your kernel and recompiled it for this
+  feature to be enabled.
+   
+To do
+-----
+
+* Make sure the devices you want to combine are up, they all accept the
+  packets you want to send (ie, they must all have the same IP address/netmask
+  or something clever to get the same result)
+* Just to make sure, remove any routes via those devices (route del ...)
+* Now add all routes via one iproute command using the 'nexthops' statement:
+
+  ip route add <destaddress>/<netmask> equalize \\
+     nexthop dev <first device> \\
+     nexthop dev <second device> \\
+     nexthop ...
+     
+* Just to make sure, flush route cache:
+
+  echo 1 >/proc/sys/net/ipv4/route/flush
+  
+The previous commands will add a normal route to the destination. This means
+that communication between you and the destination gets balanced. However, if
+the destination is also a gateway, you must explicitly add a balanced default
+route:
+
+* Default route when the destination is also your gateway:
+
+  ip route add default equalize \\
+     nexthop dev <first device> via <destaddress> onlink \\
+     nexthop dev <second device> via <destaddress> onlink \\
+     nexthop ...
+
+Example
+-------
+
+This is an example showing how to make a 20 Mbit connection between two
+computers using 2 10 Mbit ethernet cards per computer. Computer 1 has IP
+192.168.1.1 and computer 2 has IP 192.168.1.2. We start from scratch:
+
+[computer1]~/>ifconfig eth0 192.168.1.1 netmask 255.255.255.0
+[computer1]~/>route del -net 192.168.1.0 netmask 255.255.255.0
+[computer1]~/>ifconfig eth1 192.168.1.1 netmask 255.255.255.0
+[computer1]~/>route del -net 192.168.1.0 netmask 255.255.255.0
+[computer1]~/>ip route add 192.168.1.0/24 equalize nexthop dev eth0 nexthop dev eth1
+[computer1]~/>echo 1 >/proc/sys/net/ipv4/route/flush
+
+[computer2]~/>ifconfig eth0 192.168.1.2 netmask 255.255.255.0
+[computer2]~/>route del -net 192.168.1.0 netmask 255.255.255.0
+[computer2]~/>ifconfig eth1 192.168.1.2 netmask 255.255.255.0
+[computer2]~/>route del -net 192.168.1.0 netmask 255.255.255.0
+[computer2]~/>ip route add 192.168.1.0/24 equalize nexthop dev eth0 nexthop dev eth1
+[computer2]~/>echo 1 >/proc/sys/net/ipv4/route/flush
+
+You can even add more computers, just replace the x in 192.168.1.x with the
+number of your computer, and make sure all eth0's are connected to each other
+and all eth1's. You can also use more devices, just ifconfig them all and
+remove the default routes that are generated, and add extra nexthops.
+
+Notes
+-----
+
+Older patch versions used a /proc entry to control load-balancing. This does
+not work anymore. You should use the 'equalize' flag instead while adding new
+routes. You need a fresh version of iproute for that.
+
+A lot of people want to combine the bandwith of their (cable)modems. This
+patch cannot do this automagically. This patch only balances OUTgoing traffic,
+so unless your ISP uses the same patch, you are not going to get faster
+downloads. Furthermore, if you do want to balance outgoing traffic, you need
+to have the same IP address on all devices. For most people this is not an
+option. There is one way to get full load balancing, but you are going to need
+a friend somewhere on the internet with much bandwith and a linux server. I
+will not go into details, this is something you have to work out yourself, but
+you can make IPIP tunnels for every modem you have, connect those tunnels to
+your friend's server, tell both sides to balance over the tunnels, and tell
+your friend to masquerade your outgoing connections.
+
+Status
+------
+
+Packet type:		Balanced?	Note
+----------------------------------------------------------------------
+ARP			no		But we don't want them to ;)
+ICMP			yes
+Connectionless UDP	yes
+Connected UDP		yes
+Broadcast UDP		no		Would be nice if it would,
+					but this is rarely used for
+					high bandwith data transfers.
+TCP			yes		At least all data packets are,
+					maybe some control packets are
+					not.
+
+(Known) Bugs
+------------
+
+Due to the nature of the patch, every packet that follows a multipath uses
+a little memory that is not instantly cleaned up, but after a short period.
+This means that if your load gets higher, memory useage is higher. Since
+there is a limit to the memory that can be allocated for the packets, there
+is also a load limit. I cannot give exact numbers, however this patch does
+work with a load of 20 Mbit/s without problems on a 486 dx2 66, but not
+with a load of 400 Mbit/s on a box with multiple 400 Mhz Xeon processors.
+If the load gets too high, no memory is left for network IO, which stops
+for a while if that happens. The kernel should not crash if this happens.
+
+Technically
+-----------
+
+Load balancing needed a slight adjustment to the unpatched linux kernel,
+because of the route cache. Multipath is an option already found in the old
+2.1.x kernels. However, once a packet arrives, and it matches a multipath
+route, a (quasi random) device out of the list of nexthops is taken for its
+destination. That's okay, but after that the kernel puts everything into a
+hash table, and the next time a packet with the same source/dest/tos arrives,
+it finds it is in the hash table, and routes it via the same device as last
+time. The adjustment I made is as follows: If the kernel sees that the route
+to be taken has got the 'equalize' flag set, it not only selects the random
+device, but also tags the packet with the RTCF_EQUALIZE flag. If another
+packet of the same kind arrives, it is looked up in the hash table. It then
+checks if our flag is set, and if so, it deletes the entry in the cache and
+has to recalculate the destination again.

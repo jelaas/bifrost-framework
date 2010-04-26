@@ -1,0 +1,6 @@
+
+	Template files for firewall filters
+
+	This is a working configuration to protect a single machine
+	behind a Bifrost firewall.
+

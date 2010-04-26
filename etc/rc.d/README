@@ -1,0 +1,47 @@
+
+rc.0		= Runlevel for halt
+rc.6		= Runlevel for reboot
+rc.K		= Single user mode
+rc.M		= Multi user mode (calls the other startup rc files)
+rc.S		= System init (fsck, ramdisk, copy devices and such)
+rc.dhcp		= DHCP server
+rc.execlog	= Insert module for logging of exec activities (*)
+rc.inet		= Network init (calls rc.interfaces)
+rc.inet.routes	= Network routes
+rc.interfaces	= Network interface setup
+rc.lo		= Loopback interface init
+rc.ntp		= NTP time server/client
+rc.rate-icmp	= Set rate limit on ICMP traffic (original at /contrib)
+rc.syslog	= Start syslogd or syslog-ng
+rc.tc		= Example QoS class definitions (original and more examples at /contrib)
+
+* It may cause havoc to your system if it collides with other syscalls,
+  be careful!
+
+
+How to create subinterfaces (just add a colon and the sub number):
+
+ifconfig eth0 10.1.1.1 broadcast 255.255.255.255 netmask 255.255.255.0
+ifconfig eth0:1 10.3.1.6 broadcast 255.255.255.255 netmask 255.255.255.128
+ifconfig eth0:2 10.3.1.7 broadcast 255.255.255.255 netmask 255.255.255.128
+ifconfig eth0:3 10.10.5.2 broadcast 255.255.255.255 netmask 255.255.255.0
+
+or
+
+ip a add 10.1.1.1/24 broadcast 255.255.255.255 dev eth0
+ip link set eth0 up
+ip a add 10.3.1.6/25 broadcast 255.255.255.255 dev eth0 label eth0:one
+ip a add 10.3.1.7/25 broadcast 255.255.255.255 dev eth0 label eth0:two
+ip a add 10.10.5.2/24 broadcast 255.255.255.255 dev eth0 label eth0:three
+
+rc.interfaces has support for labeled sub interfaces...
+
+NOTE!  rc.interfaces has now been rebuilt and the sub interface file
+name syntax should be something like:
+
+eth0:10.nic
+
+and the interface itself:
+
+eth0:10
+

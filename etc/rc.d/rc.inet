@@ -1,0 +1,149 @@
+#!/bin/bash
+#
+# rc.inet
+#
+# Description: launches rc scripts for all the network interfaces
+. /etc/config.data/kernel
+
+# Install default versions if needed:
+for f in fwrules; do
+    [ -f /filter/$f ] || cp -p /filter/$f.default /filter/$f
+done
+
+# Setup filter rules before enabling the network interfaces
+export CONFIG_FWRULES=`cat /etc/config.flags/fwrules`
+if [ $CONFIG_FWRULES = "yes" ]; then
+    echo "Loading iptables:"
+    modprobe iptable_filter
+    modprobe ipt_LOG
+    modprobe xt_tcpudp
+    if [ "$(cat etc/config.flags/conntrack 2>/dev/null)" = "yes" ]; then
+	modprobe iptable_mangle
+	modprobe iptable_nat
+	modprobe ipt_MARK
+	modprobe ipt_REDIRECT
+	modprobe xt_state
+    fi
+    if [ -f /filter/fwrules ]; then
+	echo "Adding Filter Rules:"
+	/filter/fwrules
+    else
+	echo " W: No rules found (/filter/fwrules)"
+    fi
+fi
+
+# Setup IPv6 filter rules before enabling the network interfaces
+export CONFIG_FW6RULES=`cat /etc/config.flags/fw6rules`
+if [ $CONFIG_FW6RULES = "yes" ]; then
+    echo "Loading ip6tables:"
+    modprobe ip6_tables
+    modprobe ip6table_filter
+    if [ -f /filter/fw6rules ]; then
+        echo "Adding IPv6 Filter Rules:"
+        /filter/fw6rules
+    else
+	echo " W: No rules found (/filter/fw6rules)"
+    fi
+fi
+
+/etc/rc.d/rc.lo
+
+# Bring up interfaces.
+NETDEVS=/etc/config.data
+
+# Rename ethX to get the ethX interfaces in correct order.
+FILE=/etc/config.flags/ifrename
+if [ -f  $FILE ] && [ "`cat $FILE`" = "yes" ]; then
+    echo "Doing interface renaming"
+     /sbin/ifrename -t -c $NETDEVS/ifrename
+fi
+
+for F in $NETDEVS/*.nic NONE ; do
+    IF=$(basename $F)
+    IF=${IF//.nic/}
+    FILE=/etc/config.flags/$IF.nic
+    [ -f $FILE ] && [ "`cat $FILE`" = "yes" ] && /etc/rc.d/rc.interfaces $IF up
+done
+
+if [ -f /etc/rc.d/rc.packetfilter ]; then
+    /etc/rc.d/rc.packetfilter 2> /dev/null
+fi
+
+/etc/rc.d/rc.inet.routes
+
+# Set the Shorter Defrag Time option on or off
+#
+# Fragmentation is controlled by:
+# /proc/sys/net/ipv4/ipfrag_high_thresh = 262144
+# /proc/sys/net/ipv4/ipfrag_low_thresh = 196608
+# /proc/sys/net/ipv4/ipfrag_time = 30
+#
+if [ -e /proc/sys/net/ipv4/ipfrag_time ]; then
+    SHORT_DEFRAG_TIME=`cat /etc/config.flags/short-defrag-time`
+    if [ ${SHORT_DEFRAG_TIME:-yes} = "yes" ]; then
+	echo "Turning on the Short Defrag Time option (to 2 seconds)"
+	echo 2 > /proc/sys/net/ipv4/ipfrag_time
+    else
+	echo "Turning off the Short Defrag Time option (to 30 seconds)"
+	echo 30 > /proc/sys/net/ipv4/ipfrag_time
+    fi
+fi
+
+# IP forwarding must be turned on explicitly if using
+# 2.2 kernels and higher
+if [ -e /proc/sys/net/ipv4/ip_forward ]; then
+    IP_FORWARD=`cat /etc/config.flags/ipv4-forward`
+    if [ ${IP_FORWARD:-yes} = "yes" ]; then
+	echo "Turning on IPV4 forwarding (ignore previous warning)"
+	echo 1 > /proc/sys/net/ipv4/ip_forward
+    else
+	echo "Turning off IPV4 forwarding (no routing possible)"
+	echo 0 > /proc/sys/net/ipv4/ip_forward
+    fi
+fi
+
+# IPV6 forwarding must be turned on 
+if [ -e /proc/sys/net/ipv6/conf/all/forwarding ]; then
+    IP_FORWARD=`cat /etc/config.flags/ipv6-forward`
+    if [ ${IP_FORWARD:-yes} = "yes" ]; then
+	echo "Turning on IPV6 forwarding (ignore previous warning)"
+	echo 1 > /proc/sys/net/ipv6/conf/all/forwarding
+    else
+	echo "Turning off IPV6 forwarding (no routing possible)"
+	echo 0 > /proc/sys/net/ipv6/conf/all/forwarding
+    fi
+fi
+
+# Deny ICMP broadcasts
+if [ -e /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts ]; then
+    IGNORE_ICMP_BC=`cat /etc/config.flags/ignore-icmp-bc`
+    if [ ${IGNORE_ICMP_BC:-yes} = "yes" ]; then
+        echo "Denying ICMP broadcasts"
+        echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
+    else
+        echo "Accepting ICMP broadcasts"
+        echo 0 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
+    fi
+fi
+
+# Increase local port range for high-usage systems
+if [ -e /proc/sys/net/ipv4/ip_local_port_range ]; then
+    LOCAL_PORT_RANGE=`cat /etc/config.flags/local-port-range`
+    if [ ${LOCAL_PORT_RANGE:-yes} = "yes" ]; then
+        echo "32768 61000" > /proc/sys/net/ipv4/ip_local_port_range
+    fi
+    echo -n "Local port range will be "
+    cat /proc/sys/net/ipv4/ip_local_port_range | tr -s '       ' '-'
+fi
+
+# Turn on TCP SYN-flooding protection.
+if [ -e /proc/sys/net/ipv4/tcp_syncookies ]; then
+    echo "Turning on TCP SYN flood protection"
+    echo 1 > /proc/sys/net/ipv4/tcp_syncookies
+fi
+
+#-- check for local settings of conntrack and gc_thresh
+[ -f /etc/rc.d/rc.inet.local ] && /etc/rc.d/rc.inet.local
+
+#-- some times you may want VLAN interfaces...
+[ -f /etc/rc.d/rc.inet.vlan ] && /etc/rc.d/rc.inet.vlan

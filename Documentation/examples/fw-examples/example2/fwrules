@@ -1,0 +1,160 @@
+#!/bin/sh
+#
+# Main file for firewall rules, using ipchains.
+# Written by Tom Karlsson 2000-03-28
+# Parameters to fwrules are:
+#
+# refresh = Initialize or reinitialize the complete set of rules (default).
+#           This will clear all statistics.
+# purge   = Delete the rules declared in the fwrules files,
+#           but leave all manually added rules.
+# delete  = Delete all rules.
+#
+
+source /filter/fw.conf
+
+ARG=$1
+if [ ${ARG:-none} = "none" ]; then
+    ARG="refresh"
+    ipchains -F
+    ipchains -X
+else
+    if [ $ARG != "refresh" -a $ARG != "purge" -a $ARG != "delete" ]; then
+        echo
+        echo "Usage:   $0 <refresh|purge|delete>"
+        echo "Example: $0 refresh    (default)"
+        echo
+        exit
+    fi
+fi
+
+case $ARG in ( refresh ) ACTION=refresh; ipchains -F; ipchains -X;;
+             ( purge )   ACTION=purge;;
+             ( delete )  ACTION=delete; ipchains -F; ipchains -X; exit;;
+esac
+
+ipchains --version
+echo
+echo "$0"
+
+#------------------
+# Set default policy
+#
+ipchains -P input DENY
+ipchains -P forward ACCEPT
+ipchains -P output ACCEPT
+
+#------------------
+# Create new sub chains.
+# Inserted in reverse traffic order.
+#
+if [ $ACTION = "refresh" ]; then
+    ipchains -N ingress 2> /dev/null
+    ipchains -I input -j ingress
+
+    ipchains -N log 2> /dev/null
+    ipchains -I input -j log
+
+    ipchains -N frstcls 2> /dev/null
+    ipchains -I input -j frstcls
+
+    ipchains -N ica 2> /dev/null
+    ipchains -I input -j ica
+
+    ipchains -N webster 2> /dev/null
+    ipchains -I input -j webster
+
+    ipchains -N tochret 2> /dev/null
+    ipchains -I input -j tochret
+
+    ipchains -N snmp 2> /dev/null
+    ipchains -I input -j snmp
+
+    ipchains -N nntp 2> /dev/null
+    ipchains -I input -j nntp
+
+    ipchains -N printers 2> /dev/null
+    ipchains -I input -j printers
+
+    ipchains -N lyskom 2> /dev/null
+    ipchains -I input -j lyskom
+
+    ipchains -N dhcp 2> /dev/null
+    ipchains -I input -j dhcp
+
+    ipchains -N ntp 2> /dev/null
+    ipchains -I input -j ntp
+
+    ipchains -N cifs 2> /dev/null
+    ipchains -I input -j cifs
+
+    ipchains -N nis 2> /dev/null
+    ipchains -I input -j nis
+
+    ipchains -N mail 2> /dev/null
+    ipchains -I input -j mail
+
+    ipchains -N login 2> /dev/null
+    ipchains -I input -j login
+
+    ipchains -N dns 2> /dev/null
+    ipchains -I input -j dns
+
+    ipchains -N http 2> /dev/null
+    ipchains -I input -j http
+
+    ipchains -N icmp 2> /dev/null
+    ipchains -I input -j icmp
+    ipchains -N ficmp 2> /dev/null
+    ipchains -I forward -j ficmp
+
+    ipchains -N out 2> /dev/null
+    ipchains -I input -j out
+
+    ipchains -N napster 2> /dev/null
+    ipchains -I input -j napster
+
+    ipchains -N rate 2> /dev/null
+    ipchains -I output -j rate
+
+    ipchains -N cron 2> /dev/null
+    ipchains -I input -j cron
+fi
+
+#------------------
+# lock
+#
+ipchains -I input 1 -j DENY
+
+#------------------
+# Call the other modules
+#
+
+/filter/fwrules.ingress $ACTION
+/filter/fwrules.log $ACTION
+/filter/fwrules.firstclass $ACTION
+/filter/fwrules.ica $ACTION
+/filter/fwrules.webster $ACTION
+/filter/fwrules.turochretur $ACTION
+/filter/fwrules.snmp $ACTION
+/filter/fwrules.nntp $ACTION
+/filter/fwrules.printers $ACTION
+/filter/fwrules.lyskom $ACTION
+/filter/fwrules.dhcp $ACTION
+/filter/fwrules.ntp $ACTION
+/filter/fwrules.cifs $ACTION
+/filter/fwrules.nis $ACTION
+/filter/fwrules.mail $ACTION
+/filter/fwrules.login $ACTION
+/filter/fwrules.dns $ACTION
+/filter/fwrules.http $ACTION
+/filter/fwrules.icmp $ACTION
+/filter/fwrules.out $ACTION
+/filter/fwrules.napster $ACTION
+/filter/fwrules.rate $ACTION
+/filter/fwrules.cron $ACTION
+
+#------------------
+# Remove lock
+#
+ipchains -D input 1

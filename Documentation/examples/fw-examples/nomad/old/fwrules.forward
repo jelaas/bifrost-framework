@@ -1,0 +1,10 @@
+#!/bin/sh
+#
+# Allow returning forward packets per interface
+# Set up one rule for each internal interface
+#
+
+ipchains -A forward -i $IF_IP2 -s $NET_ALL -j ACCEPT
+#ipchains -A forward -i $IF_IP3 -s $NET_ALL -j ACCEPT
+#ipchains -A forward -i $IF_IP4 -s $NET_ALL -j ACCEPT
+#ipchains -A forward -i $IF_IP5 -s $NET_ALL -j ACCEPT
