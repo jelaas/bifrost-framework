@@ -6,7 +6,7 @@
 . /etc/config.data/kernel
 
 # Install default versions if needed:
-for f in fwrules; do
+for f in fwrules fw6rules; do
     [ -f /filter/$f ] || cp -p /filter/$f.default /filter/$f
 done
 
