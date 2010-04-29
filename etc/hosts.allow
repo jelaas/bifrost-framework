@@ -1,5 +1,0 @@
-#in.telnetd:	10.11.12.9, 10.11.12.:	ALLOW
-#wu.ftpd:	10.11.12.9, 10.11.12.:	ALLOW
-#sshd:		10.11.12.9, 10.11.12.:	ALLOW
-
-ALL:	ALL:	DENY
