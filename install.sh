@@ -19,9 +19,9 @@ ln -sf /tmp/know_hosts2_root $dst/.ssh/know_hosts2
 
 ln -sf /dev.real $dst/tmp/dev
 
-ln -sf lib       $dst/usr/share
-ln -sf /tmp      $dst/usr/tmp
-ln -sf /var/adm  $dst/usr/adm
+ln -snf lib       $dst/usr/share
+ln -snf /tmp      $dst/usr/tmp
+ln -snf /var/adm  $dst/usr/adm
 ln -snf /var/log  $dst/usr/log
 
 ln -sf /tmp/initrunlvl             $dst/etc/initrunlvl
@@ -31,11 +31,11 @@ ln -sf rc.0                        $dst/etc/rc.d/rc.6
 ln -sf /sbin/e2fsck                $dst/etc/fs/fsck.ext2
 
 for dev in dev dev.real; do
-    ln -sf /proc/kcore   $dst/$dev/core
+    ln -sf /proc/kcore    $dst/$dev/core
     ln -snf /proc/self/fd $dst/$dev/fd
-    ln -sf fd/0          $dst/$dev/stdin
-    ln -sf fd/1          $dst/$dev/stdout
-    ln -sf fd/2          $dst/$dev/stderr
+    ln -sf fd/0           $dst/$dev/stdin
+    ln -sf fd/1           $dst/$dev/stdout
+    ln -sf fd/2           $dst/$dev/stderr
     ln -snf ramdisk       $dst/$dev/ram0
     ln -snf ram1          $dst/$dev/ram1
 done
@@ -45,3 +45,10 @@ ln -sf bash $dst/bin/sh
 install -p -m 0400 input.rc     $dst/.input.rc
 install -p -m 0400 bash_logout  $dst/.bash_logout
 install -p -m 0400 bash_profile $dst/.bash_profile
+
+cp -a Documentation $dst
+cp -a etc           $dst
+cp -a filter        $dst
+cp -a opt           $dst
+cp -a sbin          $dst
+cp -a usr           $dst
