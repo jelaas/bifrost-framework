@@ -37,7 +37,8 @@ if [ $(allcaps) = yes ]; then
 	echo
 	echo "*****************************************"
 	echo "Launching a minimal single user shell."
-	echo "If you do not login normal boot will continue in 60 seconds"
+	echo "If you do not login normal boot will continue in 60 seconds."
+	echo "Or you may press CONTROL-D to continue normal boot."
 	echo "*****************************************"
 	echo
 	echo
@@ -62,6 +63,11 @@ for f in dhcpd inetd ntp dnsmasq ramlog slow-keyboard ifrename conntrack local-p
 done
 [ -f /etc/config.data/tmpsize ] || echo 256m > /etc/config.data/tmpsize
 [ -f /etc/HOSTNAME ] || echo Bifrost > /etc/HOSTNAME
+
+# Generate ssh keys if needed
+[ -f /.ssh/identity ] || ssh-keygen -t rsa1 -P "" -N "" -f /.ssh/identity
+[ -f /.ssh/id_rsa ] || ssh-keygen -t rsa -P "" -N "" -f /.ssh/id_rsa
+[ -f /.ssh/id_dsa ] || ssh-keygen -t dsa -P "" -N "" -f /.ssh/id_dsa
 
 # Create /tmp, /proc and /sys
 rm -rf /tmp
