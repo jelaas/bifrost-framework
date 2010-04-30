@@ -5,7 +5,18 @@
 # Everything should be put inplace so that the distribution binaries may be
 # unpacked on-top of the structure to create a complete system.
 
-dst=/tmp/bifrost-6.1-beta2
+while [ "$1" ]; do
+    [ "$1" = "-d" ] && dst=$2 && shift
+    shift
+done
+
+if [ -z "$dst" ] ; then
+    dst=/tmp/bifrost-$(cat version)
+    echo "Install framework into $dst?"
+    echo -n "[y/n]:"
+    read REPLY
+    [ "$REPLY" = y ] || exit 1
+fi
 
 mkdir -p $dst
 
