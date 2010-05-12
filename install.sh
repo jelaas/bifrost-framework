@@ -58,7 +58,7 @@ install -p -m 0400 bash_logout  $dst/.bash_logout
 install -p -m 0400 bash_profile $dst/.bash_profile
 
 for f in CHANGELOG CONFIG.txt README.txt README-bifrost-6.0 README-bifrost-6.1; do
-    cp -p $f $dst/$f
+    cp -Pp $f $dst/$f
 done 
 
 cp -a Documentation $dst
