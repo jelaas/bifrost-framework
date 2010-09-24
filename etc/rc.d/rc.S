@@ -53,7 +53,7 @@ echo "Remounting root device with read-write enabled."
 
 # Install default versions if needed:
 for f in hosts passwd shadow group fstab hosts.allow syslog.conf resolv.conf ntp.conf; do
-    [ -f /etc/$f ] || cp -p /etc/config.default/$f.default /etc/$f
+    [ -f /etc/$f ] || cp -p /etc/config.preconf/$f.default /etc/$f
 done
 for f in cron ifstat2 sshd swedish-keyboard ipv4-forward ipv6-forward fw6rules fwrules ignore-icmp-bc short-defrag-time; do
     [ -f /etc/config.flags/$f ] || echo yes > /etc/config.flags/$f
