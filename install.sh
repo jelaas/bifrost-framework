@@ -20,7 +20,7 @@ fi
 
 mkdir -p $dst
 
-for d in bin bin32 bin64 boot contrib dev dev/pts dev/bus dev/bus/usb dev.real dev.real/pts dev.real/bus dev.real/bus/usb  Documentation etc etc/config.data etc/config.flags etc/config.default etc/crontabs etc/device-detect.d etc/eth-detect.d etc/fs etc/iproute2 etc/rc.d etc/ssh filter lib mnt opt proc sbin sys tmp usr usr/bin usr/lib usr/libexec usr/log.persistent usr/sbin usr/lib/file usr/lib/tc usr/lib/terminfo usr/lib/terminfo/v usr/lib/terminfo/x usr/lib/zoneinfo .ssh; do
+for d in bin bin32 bin64 boot contrib dev dev/pts dev/bus dev/bus/usb dev.real dev.real/pts dev.real/bus dev.real/bus/usb  Documentation etc etc/config.data etc/config.flags etc/config.preconf etc/crontabs etc/device-detect.d etc/eth-detect.d etc/fs etc/iproute2 etc/rc.d etc/ssh filter lib mnt opt proc sbin sys tmp usr usr/bin usr/lib usr/libexec usr/log.persistent usr/sbin usr/lib/file usr/lib/tc usr/lib/terminfo usr/lib/terminfo/v usr/lib/terminfo/x usr/lib/zoneinfo .ssh; do
     mkdir -p $dst/$d
 done
 
