@@ -10,6 +10,12 @@ for f in fwrules fw6rules; do
     [ -f /filter/$f ] || cp -p /filter/$f.default /filter/$f
 done
 
+read FLAG < /etc/config.flags/disable-route-cache
+if [ "$FLAG" = yes ]; then
+    echo "Disabling route cache."
+    echo -1 > /proc/sys/net/ipv4/rt_cache_rebuild_count
+fi
+
 # Setup filter rules before enabling the network interfaces
 export CONFIG_FWRULES=`cat /etc/config.flags/fwrules`
 if [ $CONFIG_FWRULES = "yes" ]; then

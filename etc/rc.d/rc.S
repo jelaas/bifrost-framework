@@ -55,7 +55,7 @@ echo "Remounting root device with read-write enabled."
 for f in hosts passwd shadow group fstab hosts.allow syslog.conf resolv.conf ntp.conf; do
     [ -f /etc/$f ] || cp -p /etc/config.preconf/$f.default /etc/$f
 done
-for f in cron ifstat2 sshd swedish-keyboard ipv4-forward ipv6-forward fw6rules fwrules ignore-icmp-bc short-defrag-time; do
+for f in cron ifstat2 sshd swedish-keyboard ipv4-forward ipv6-forward fw6rules fwrules ignore-icmp-bc short-defrag-time disable-route-cache; do
     [ -f /etc/config.flags/$f ] || echo yes > /etc/config.flags/$f
 done
 for f in dhcpd inetd ntp dnsmasq ramlog slow-keyboard ifrename conntrack local-port-range dummy0.nic; do
