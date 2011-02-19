@@ -1,0 +1,212 @@
+#!/bin/sh
+
+# makeusbmem is variant of makeflash this was written by Hans Liss/UU.
+# makeusbmem the usb variant was "created" by Robert Olsson/UU
+# Andreas Wallin/UU added grub.
+# Fixes from  Emil Pedersen <archive@ftp.sunet.se> 2007-02-01
+#   fixar en "quote"-bug map tararkivet
+#   + avmonterar minnet vid avslut
+#   + flyttar monteringen till /tmp istf / och tar bort den
+#     efter (om den inte fanns tidigare)
+#
+# makemedia -- next generation makeXXXX		(Emil Pedersen/UU 20080914-)
+#   o have a single script handle both USB and Flash (and possibly others)
+#   o allows the addition of extra packages at the same time
+#
+#   o need to be run by root (unless som magic udev rules are used??)
+#
+
+[ $(id -u) != 0 ] && \
+    { printf "need to run as root, be carefull with the arguments.\n\n"; exit; }
+
+unconditional=0
+if [ "x$1" = "x-u" ]
+then
+    unconditional=1
+    shift
+fi
+
+if [ \( -z "$1" \) -o \( -z "$2" \)  -o \( -z "$3" \) ]
+then
+    echo ""
+    echo "Usage: $0 <target device> <boot device> <archive> [extra archives]"
+    echo ""
+    echo "    target device   -- device to write the archive to, this varies a"
+    echo "                       lot from host to host, but is usualy NOT hda/sda"
+    echo "    boot device     -- device when running, usually 'sda'"
+    echo "                       for USB mem and 'hda' for CompactFlash"
+    echo "    archive         -- bifrost tar archive"
+    echo "    extra archives  -- add optional extra packages (www, snmp, ...)"
+    echo ""
+    echo "  note that <device> should not containg the leading \"/dev/\""
+    exit 1
+fi
+dev=${1:?No target device name given}
+bootdev=${2:?No boot device name given}
+archive=${3:?No archive name given}
+shift; shift; shift;
+
+MP=/tmp/makeusbmem-mp
+if [ ! -d $MP ]
+then
+	mkdir $MP
+	removemp=True
+fi
+if [ ! -b /dev/$dev ]
+then
+	echo "/dev/$dev does not exist or is no block device"
+	exit 1
+fi
+if mount | grep "/dev/$dev" > /dev/null 2>&1
+then
+	echo "/dev/$dev contains mounted file systems"
+	exit 1
+fi
+if [ ! $bootdev = "sda"  -a  ! $bootdev = "hda" ]; then
+	echo "boot device '$bootdev' probably wrong (netiher hda nor sda)"
+	exit 1
+fi
+if [ ! -f $archive ]
+then
+	echo "$archive does not exist"
+	exit 1
+fi
+
+fc=`echo $archive | cut -c1`
+if [ "$fc" != "/" -a "$fc" != "~" ]
+then
+	archive="`pwd`/$archive"
+fi
+if [ "$unconditional" -eq 0 ]
+then
+    echo "Will erase /dev/$dev and load $archive onto it"
+    echo "Is this correct (yes is affirmative)?"
+    read ans
+    if [ "$ans" != "yes" ]
+    then
+	echo "OK, exiting."
+	exit
+    fi
+fi
+#
+#
+echo "Rebuilding partition table on /dev/$dev..."
+/sbin/fdisk /dev/$dev  > /tmp/makeusbmem.$$ 2>&1 << EOF
+o
+n
+p
+1
+
+
+a
+1
+w
+EOF
+if [ "$?" -ne 0 ]
+then
+	echo "Failed!"
+	cat /tmp/makeusbmem.$$
+	rm /tmp/makeusbmem.$$
+	exit 1
+fi
+rm /tmp/makeusbmem.$$
+/sbin/fdisk -l /dev/$dev
+#
+#
+echo "Building a file system on /dev/${dev}1"
+if /sbin/mke2fs -Onone,sparse_super -i8192 /dev/${dev}1 > /tmp/makeusbmem.$$ 2>&1
+then
+	:
+else
+	echo "Failed!"
+	cat /tmp/makeusbmem.$$
+	rm /tmp/makeusbmem.$$
+	exit 1
+fi
+rm /tmp/makeusbmem.$$
+#
+#
+echo "Mounting /dev/${dev}1 on $MP"
+if mount /dev/${dev}1 $MP > /tmp/makeusbmem.$$ 2>&1
+then
+	:
+else
+	echo "Failed!"
+	cat /tmp/makeusbmem.$$
+	rm /tmp/makeusbmem.$$
+	exit 1
+fi
+rm /tmp/makeusbmem.$$
+#
+#
+echo "Will now unpack $archive in $MP"
+if tar -x -z -p -C $MP -f "$archive" > /tmp/makeusbmem.$$ 2>&1
+then
+	:
+else
+	echo "Failed!"
+	umount $MP
+	cat /tmp/makeusbmem.$$
+	rm /tmp/makeusbmem.$$
+	exit 1
+fi
+rm /tmp/makeusbmem.$$
+
+
+echo "Installing grub"
+[ -f $MP/boot/grub/menu.lst ] || {
+    echo "Failed!"
+    echo "No '/boot/grub/menu.lst' in archive file, this will most likely not boot!"
+    echo "Old releases used lilo instead of grub, they must be manually patched to"
+    echo "function properly with this script (i.e. valid menu.lst must be created)."
+    umount $MP
+    exit 1
+}
+
+if grub-install --recheck --no-floppy --root-directory=$MP  /dev/$dev  > /tmp/makeusbmem.$$ 2>&1
+then
+	:
+else
+	echo "Failed!"
+	umount $MP
+	cat /tmp/makeusbmem.$$
+	rm /tmp/makeusbmem.$$
+	exit 1
+fi
+rm /tmp/makeusbmem.$$
+
+
+# modify a few hard-coded values for the root device when using Flash
+if [ $bootdev = "hda" ]; then
+    BDEV=${bootdev}1
+    #
+    # add root=... to kernel entrys (inc. memtest, ugly but doesn't harm it)
+    echo "fixing root specification "
+    FILE="$MP/boot/grub/menu.lst"
+    awk -vBDEV=$BDEV '/^kernel/ {print $0" root=/dev/"BDEV; next}
+                                {print;}' $FILE > $FILE.tmp \
+        && mv $FILE.tmp $FILE || { echo "Failed!"; umount $MP; exit 1; }
+
+    FILE="$MP/etc/rc.d/rc.S"
+    sed '/^e2fsck/s|/dev/sda1|/dev/'$BDEV'|' $FILE > $FILE.tmp \
+        && mv $FILE.tmp $FILE || { echo "Failed!"; umount $MP; exit 1; }
+    chmod +x $FILE
+
+    FILE="$MP/etc/fstab"
+    sed 's|/dev/sda1|/dev/'$BDEV'|' $FILE > $FILE.tmp \
+        && mv $FILE.tmp $FILE || { echo "Failed!"; umount $MP; exit 1; }
+fi
+
+
+# add extra packages, if any
+for pkg in $@; do
+	echo "Adding optional package $pkg"
+	tar -C $MP -xzf $pkg
+done
+
+
+echo "Done - cleaning up."
+umount $MP
+if [ "$removemp" = "True" ]; then
+	rmdir "$MP"
+fi
