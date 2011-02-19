@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# Instead of using the non existant 'mail' to send
+# cron failures to us, we use a simple script to
+# save the report as a file instead. Should only
+# be used for debugging.
+#
+# Files are saved with time stamps under /tmp
+# and if the file already exists, we move it to
+# another name first.
+#
+
+#CUR_TIME=`date +%y%m%d%H%M%S`
+#MAIL_FILE=/tmp/cronmail.$CUR_TIME
+#UMASK_TMP=`umask`
+
+#umask 077
+#if [ -f $MAIL_FILE ]; then
+#	mv $MAIL_FILE /tmp/BOGUS.$MAIL_FILE
+#fi
+
+#cat > $MAIL_FILE
+
+#umask $UMASK_TMP
