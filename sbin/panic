@@ -1,0 +1,47 @@
+#!/bin/bash
+
+F=/panicdump.$(date +%Y%m%d.%H%M)
+remount w
+
+date >> $F
+echo "######" >> $F
+
+function run {
+    echo >> $F
+    echo "######" >> $F
+    echo "# $@" >> $F
+    echo "######" >> $F
+    $@ >> $F
+}
+
+run ip l l
+run ip a l
+run ps auxww
+run netstat -n -t
+run netstat -n -s
+run netstat -n -l
+run eth-affinity -l -v
+run tc -s qdisc
+run cat /proc/net/dev
+run ifinfo -a
+run ifconfig -a
+
+for nic in $(ifinfo); do
+    run ethtool -D $nic
+    run ethtool -d $nic
+    run ethtool -S $nic
+done
+
+echo "ip r|wc -l: $(ip r|wc -l)" >> $F
+
+run ip r l 0/0
+run cat /proc/net/softnet_stat
+run dmesg
+if [ -e /etc/config.data/PANIC ] ; then
+    . /etc/config.data/PANIC
+    [ "$IPA" ] && run ip r get to $IPA
+    [ "$IPB" ] && run ip r get to $IPB
+    [ "$IPC" ] && run ip r get to $IPC
+fi
+
+remount r
