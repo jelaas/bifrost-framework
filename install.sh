@@ -18,6 +18,29 @@ if [ -z "$dst" ] ; then
     [ "$REPLY" = y ] || exit 1
 fi
 
+function devcreate {
+    local dst L dt n major minor mode
+    dst=$1
+    while read L; do
+	dt=x
+	if echo $L|grep -q "block special"; then
+	    dt=b
+	fi
+	if echo $L|grep -q "character special"; then
+	    dt=c
+	fi
+	if [ "$dt" != x ]; then
+	    mode=$(echo $L|cut -d, -f 1)
+	    major=$(echo $L|cut -d, -f 2)
+	    minor=$(echo $L|cut -d, -f 3)
+	    n=$(echo $L|cut -d, -f 5)
+	    n=$(basename $n)
+	    mknod $dst/$n $dt 0x$major 0x$minor
+	    chmod $mode $dst/$n
+	fi
+    done
+}
+
 mkdir -p $dst
 
 for d in bin bin32 bin64 boot contrib dev dev/pts dev/bus dev/bus/usb dev.real dev.real/pts dev.real/bus dev.real/bus/usb  Documentation etc etc/config.data etc/config.flags etc/config.preconf etc/crontabs etc/device-detect.d etc/eth-detect.d etc/fs etc/iproute2 etc/rc.d etc/ssh filter lib mnt opt proc sbin sys tmp usr usr/bin usr/lib usr/libexec usr/log.persistent usr/sbin usr/lib/file usr/lib/tc usr/lib/terminfo usr/lib/terminfo/v usr/lib/terminfo/x usr/lib/zoneinfo .ssh; do
@@ -49,6 +72,7 @@ for dev in dev dev.real; do
     ln -sf fd/2           $dst/$dev/stderr
     ln -snf ramdisk       $dst/$dev/ram0
     ln -snf ram1          $dst/$dev/ram1
+    devcreate $dst/$dev < devices
 done
 
 ln -sf bash $dst/bin/sh
