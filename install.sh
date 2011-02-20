@@ -35,8 +35,7 @@ function devcreate {
 	    minor=$(echo $L|cut -d, -f 3)
 	    n=$(echo $L|cut -d, -f 5)
 	    n=$(basename $n)
-	    mknod $dst/$n $dt 0x$major 0x$minor
-	    chmod $mode $dst/$n
+	    mknod $dst/$n $dt 0x$major 0x$minor && chmod $mode $dst/$n
 	fi
     done
 }
@@ -70,8 +69,8 @@ for dev in dev dev.real; do
     ln -sf fd/0           $dst/$dev/stdin
     ln -sf fd/1           $dst/$dev/stdout
     ln -sf fd/2           $dst/$dev/stderr
-    ln -snf ramdisk       $dst/$dev/ram0
-    ln -snf ram1          $dst/$dev/ram1
+    ln -snf ram0          $dst/$dev/ramdisk
+    ln -snf ram1          $dst/$dev/ram
     devcreate $dst/$dev < devices
 done
 
