@@ -9,13 +9,16 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/etc
 # mount /proc early to allow handling of LABEL.
 mount -n -t proc proc /proc
 
-[ $(allcaps) = yes ] && mount -n -t tmpfs tmpfs /dev
+# Create and populate /dev if devtmpfs is not used
+if ! grep -q devtmpfs /proc/mounts; then
+    [ $(allcaps) = yes ] && mount -n -t tmpfs tmpfs /dev
 
-# Copy devices to tmpfs-dev
-[ $(allcaps) = yes ] && cp -ra /dev.real/* /dev
+    # Copy devices to tmpfs-dev
+    [ $(allcaps) = yes ] && cp -ra /dev.real/* /dev
 
-# Start daemon to automatically popluate block-devices in /dev
-[ $(allcaps) = yes ] && /sbin/blockdev-populate -d
+    # Start daemon to automatically popluate block-devices in /dev
+    [ $(allcaps) = yes ] && /sbin/blockdev-populate -d
+fi
 
 # Check the integrity of all filesystems (add your own extras here)
 if [ $(allcaps) = yes ]; then
