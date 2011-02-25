@@ -1,0 +1,48 @@
+#!/bin/bash
+
+F=/tmp/grub.$$
+
+RO=no
+remount w && RO=yes
+
+if [ -f /etc/config.preconf/menu.lst.default ]; then
+    cp /etc/config.preconf/menu.lst.default $F
+else
+    cat <<EOF >$F
+# defaults to the first menu entry
+default 0
+
+timeout 5
+
+# uncomment the next line if you wish to use LBA (usual for large IDE drives)
+#lba32
+
+# Splashimage, provides a nice image for the background
+#splashimage /boot/grub/images/smgl-splash.xpm.gz
+
+# defines menu foreground/background, highlight foreground/background
+color  black/light-gray white/red
+
+title   kernel.default-x86_32
+root    (hd0,0)
+kernel  /boot/kernel.default-x86_32 root=/dev/sda1 rootdelay=10
+
+title   kernel.default-x86_64
+root    (hd0,0)
+kernel  /boot/kernel.default-x86_64 root=/dev/sda1 rootdelay=10
+
+title  memtest
+kernel /boot/memtest.bin
+
+EOF
+fi
+for f in /boot/*.grub; do
+    cat $f >> $F
+done
+
+mv /boot/grub/menu.lst "/boot/grub/menu.lst.$(date +%s)"
+cp $F /boot/grub/menu.lst
+
+rm -f $F
+
+[ $RO = yes ] && remount r
