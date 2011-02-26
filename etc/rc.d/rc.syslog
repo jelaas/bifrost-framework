@@ -5,13 +5,13 @@ function killproc {
 }
 
 if [ "$1" = start ]; then
-    [ -f /usr/sbin/syslogd ] && taskset -c 0 /usr/sbin/syslogd -m 0
-    [ -f /usr/sbin/klogd ] && taskset -c 0 /usr/sbin/klogd -c 4
+    [ -f /sbin/syslogd ] && taskset -c 0 /sbin/syslogd -m 0
+    [ -f /sbin/klogd ] && taskset -c 0 /sbin/klogd -c 4
     exit 0
 fi
 if [ "$1" = stop ]; then
-    [ -f /usr/sbin/syslogd ] && killproc syslogd
-    [ -f /usr/sbin/klogd ] && killproc klogd
+    [ -f /sbin/syslogd ] && killproc syslogd
+    [ -f /sbin/klogd ] && killproc klogd
     exit 0
 fi
 
