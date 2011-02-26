@@ -20,6 +20,9 @@ if ! grep -q devtmpfs /proc/mounts; then
     [ $(allcaps) = yes ] && /sbin/blockdev-populate -d
 fi
 
+# Create mountpoint for devpts if needed
+[ -e /dev/pts ] || mkdir -p /dev/pts
+
 # Check the integrity of all filesystems (add your own extras here)
 if [ $(allcaps) = yes ]; then
     e2fsck -p LABEL=bifrost
