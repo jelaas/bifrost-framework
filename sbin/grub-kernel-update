@@ -36,8 +36,10 @@ kernel /boot/memtest.bin
 
 EOF
 fi
-for f in /boot/*.grub; do
-    cat $f >> $F
+for f in /boot/grub/*.grub; do
+    if [ -f "$f" ]; then
+	cat $f >> $F
+    fi
 done
 
 mv /boot/grub/menu.lst "/boot/grub/menu.lst.$(date +%s)"
