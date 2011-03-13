@@ -19,7 +19,7 @@ echo
 
 remount r
 umount -n /mnt 2> /dev/null
-mount -nr /dev/hda1 /mnt 2> /dev/null
+mount -nr LABEL=bifrost /mnt 2> /dev/null
 cd /mnt
 
 tar cpf - . | ssh $BACKUP_USER@$BACKUP_HOST 'umask 077;rm -f /tmp/bifrost.tar*;dd of=/tmp/bifrost.tar;gzip -9 /tmp/bifrost.tar'
