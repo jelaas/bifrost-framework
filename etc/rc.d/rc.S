@@ -7,7 +7,7 @@ echo "?"
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/etc
 
 # mount /proc early to allow handling of LABEL.
-mount -n -t proc proc /proc
+mount -n -t proc proc /proc &> /dev/null
 
 # Create and populate /dev if devtmpfs is not used
 if ! grep -q devtmpfs /proc/mounts; then
@@ -25,7 +25,7 @@ fi
 
 # Check the integrity of all filesystems (add your own extras here)
 if [ $(allcaps) = yes ]; then
-    e2fsck -p LABEL=bifrost
+    e2fsck -n LABEL=bifrost
 
 # If there was a failure, drop into single-user mode.
     rc=$?
@@ -121,6 +121,7 @@ done
 
 # Mount file systems in fstab (and create an entry for /)
 # but not NFS.
+echo "Mounting any additional filesystems"
 mount -avt nonfs
 
 #Setup RAM logging
@@ -160,3 +161,4 @@ if [ $CONFIG_SWKEYBOARD = "yes" ]; then
     [ $(allcaps) = yes ] && loadkeys /etc/swedish.keyboard.map
 fi
 
+echo "# rc.S completed"
