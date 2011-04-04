@@ -66,6 +66,13 @@ if [ -f /etc/rc.d/rc.syslog ]; then
     /etc/rc.d/rc.syslog start && echo ok || echo failed
 fi
 
+# Start ipmi
+read FLAG < /etc/config.flags/ipmi
+if [ "$FLAG" = yes ]; then
+    echo -n " ipmi "
+    /etc/rc.d/rc.ipmi start && echo ok || echo failed
+fi
+
 # Start the dnsmasq server
 read FLAG < /etc/config.flags/dnsmasq
 if [ "$FLAG" = yes ]; then

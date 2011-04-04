@@ -54,7 +54,6 @@ fi
 
 # Remount the root filesystem in read-write mode
 echo "Remounting root device with read-write enabled."
-#remount w
 [ $(allcaps) = yes ] && mount -n -w -o remount /
 
 # Install default versions if needed:
@@ -64,7 +63,7 @@ done
 for f in PANIC; do
     [ -f /etc/config.data/$f ] || cp -p /etc/config.preconf/$f.default /etc/config.data
 done
-for f in cron ifstat2 sshd swedish-keyboard ipv4-forward ipv6-forward fw6rules fwrules ignore-icmp-bc short-defrag-time disable-route-cache; do
+for f in cron ifstat2 sshd swedish-keyboard ipv4-forward ipv6-forward fw6rules fwrules ignore-icmp-bc ipmi short-defrag-time disable-route-cache; do
     [ -f /etc/config.flags/$f ] || echo yes > /etc/config.flags/$f
 done
 for f in dhcpd inetd ntp dnsmasq ramlog slow-keyboard ifrename conntrack local-port-range dummy0.nic; do
