@@ -1,0 +1,24 @@
+About Bifrost packages
+----------------------
+
+The core of Bifrost is a monolithic distribution containing everything needed for the core services. (If you want to you could consider the core as one package).
+If you want to install optional packages that supply other services not included in the core you can.
+These packages can come in any form of packaging , Bifrost does not care. If the optional package want to hook on to the core init system for start/stop services etc there is a (very small) specification for this. The standard packaging so far has been simple tar archives that are unpacked from the root of the filesystem.
+
+Usually optional packages will be wholly contained in one directory under '/opt'. You may then simple do 'ls /opt' to see which packages are installed.
+
+There are really no demands of optional packages. If they want to use dynamically linked binaries they need to supply all of the library and linking system themselves, since the core monolith does not supply anything to do with dynamic linking.
+
+Anatomy of an optional package (when installed)
+-----------------------------------------------
+
+Packages are recommended to unpack into /opt/<packagename>
+If they want to hook into the Bifrost supplied init system they need to place a rc-script as /opt/<pkg>/rc.d/rc.<pkg>.
+Activation is indicated by the file /opt/<pkg>/etc/config.flags/<pkg>, this file may contain 'yes' or 'no'.
+Configuration should be kept together with the rest of the package under /opt/<pkg>
+
+Build system for the Bifrost core monolith
+------------------------------------------
+
+For making the Bifrost core monolith there is a build system (github.com/jelaas/bifrost-build). This build system uses packages internally to manage building and dependencies. These build system packages are not in any way exposed in the resulting monolith.
+You can of course with advantage use this build system for building optional packages, but this is optional and subject to the personal preferences of the packager.
