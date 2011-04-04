@@ -25,6 +25,7 @@ fi
 
 # Check the integrity of all filesystems (add your own extras here)
 if [ $(allcaps) = yes ]; then
+    mount -n -w -o remount,ro /
     e2fsck -n LABEL=bifrost
 
 # If there was a failure, drop into single-user mode.
