@@ -21,4 +21,6 @@ HISTFILE=
 PS1='\h:\w\$ '
 PS2='> '
 export HOSTNAME PATH TERM HISTFILE PS1 PS2
+export EDITOR=edit
+export VISUAL=edit
 umask 022
