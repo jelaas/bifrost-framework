@@ -1,0 +1,45 @@
+Melbourne,Canberra,Sydney 	EST-10EDT-11,M10.5.0/02:00:00,M3.5.0/03:00:00
+Perth	WST-8
+Brisbane	EST-10
+Adelaide	CST-9:30CDT-10:30,M10.5.0/02:00:00,M3.5.0/03:00:00
+Darwin	CST-9:30
+Hobart	EST-10EDT-11,M10.1.0/02:00:00,M3.5.0/03:00:00
+Amsterdam, Netherlands	CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00
+Athens, Greece	EET-2EEST-3,M3.5.0/03:00:00,M10.5.0/04:00:00
+Barcelona, Spain	CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00
+Berlin, Germany	CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00
+Brussels, Belgium	CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00
+Budapest, Hungary	CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00
+Copenhagen, Denmark	CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00
+Dublin, Ireland	GMT+0IST-1,M3.5.0/01:00:00,M10.5.0/02:00:00
+Geneva, Switzerland	CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00
+Helsinki, Finland	EET-2EEST-3,M3.5.0/03:00:00,M10.5.0/04:00:00
+Kyiv, Ukraine	EET-2EEST,M3.5.0/3,M10.5.0/4
+Lisbon, Portugal	WET-0WEST-1,M3.5.0/01:00:00,M10.5.0/02:00:00
+London, Great Britain	GMT+0BST-1,M3.5.0/01:00:00,M10.5.0/02:00:00
+Madrid, Spain	CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00
+Oslo, Norway	CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00
+Paris, France	CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00
+Prague, Czech Republic	CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00
+Roma, Italy	CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00
+Moscow, Russia	MSK-3MSD,M3.5.0/2,M10.5.0/3
+St.Petersburg, Russia	MST-3MDT,M3.5.0/2,M10.5.0/3
+Stockholm, Sweden	CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00
+Tallinn, Estonia	EET-2EEST-3,M3.5.0/03:00:00,M10.5.0/04:00:00
+Auckland, Wellington	NZST-12NZDT-13,M10.1.0/02:00:00,M3.3.0/03:00:00
+Hawaii Time	HAW10
+Alaska Time	AKST9AKDT
+Pacific Time	PST8PDT
+Mountain Time	MST7MDT
+Mountain Time (Arizona, no DST)	MST7
+Central Time	CST6CDT
+Eastern Time	EST5EDT
+Atlantic Time	AST4ADT
+Atlantic Time (New Brunswick)	AST4ADT,M4.1.0/00:01:00,M10.5.0/00:01:00
+Newfoundland Time	NST+3:30NDT+2:30,M4.1.0/00:01:00,M10.5.0/00:01:00
+Jakarta	WIB-7
+Singapore	SGT-8
+Ulaanbaatar, Mongolia	ULAT-8ULAST,M3.5.0/2,M9.5.0/2
+Brazil, São Paulo	BRST+3BRDT+2,M10.3.0,M2.3.0
+Argentina	UTC+3
+Central America	CST+6
