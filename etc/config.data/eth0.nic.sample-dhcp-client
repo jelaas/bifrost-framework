@@ -1,0 +1,13 @@
+export DHCP_CLIENT=yes
+export IP4ADDR=
+export IP4MASK=
+export IP6ADDR=
+export IP6MASK=
+export BROADCAST=255.255.255.255
+export CONFIG_NO_SPOOF=yes
+export CONFIG_NO_SOURCE=yes
+export CONFIG_PROXY_ARP=no
+export CONFIG_REDIRECT=yes
+export CONFIG_ACCEPT_REDIRECT=no
+export CONFIG_LOG_MARTIANS=yes
+export DESCRIPTION="ADSL"
