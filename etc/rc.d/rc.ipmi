@@ -1,10 +1,14 @@
 #!/bin/bash
 
 if [ "$1" = start ]; then
-    modprobe ipmi_si acpi_ipmi ipmi_devintf
+    modprobe ipmi_si
+    modprobe acpi_ipmi
+    modprobe ipmi_devintf
     exit 0
 fi
 if [ "$1" = stop ]; then
-    modprobe -r ipmi_si acpi_ipmi ipmi_devintf
+    modprobe -r ipmi_si
+    modprobe -r acpi_ipmi
+    modprobe -r ipmi_devintf
     exit 0
 fi
