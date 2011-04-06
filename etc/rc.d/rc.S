@@ -83,6 +83,8 @@ done
 [ -f /.ssh/identity ] || ssh-keygen -t rsa1 -P "" -N "" -f /.ssh/identity
 [ -f /.ssh/id_rsa ] || ssh-keygen -t rsa -P "" -N "" -f /.ssh/id_rsa
 [ -f /.ssh/id_dsa ] || ssh-keygen -t dsa -P "" -N "" -f /.ssh/id_dsa
+[ -f /etc/ssh/ssh_host_rsa_key ] || ssh-keygen -t rsa -b 2048 -P "" -N "" -f /etc/ssh/ssh_host_rsa_key
+[ -f /etc/ssh/ssh_host_dsa_key ] || ssh-keygen -t dsa -P "" -N "" -f /etc/ssh/ssh_host_dsa_key
 
 # Create /tmp, /proc and /sys
 rm -rf /tmp
