@@ -1,820 +1,415 @@
-#!/bin/sh
+#!/bin/bash
+
 #
-# Setup script for the Bifrost Network Project.
-# Certain files need to be updated and changed before
-# the firewall (or router) can be used at a specific
-# location.
-#
-# Copyright © by Tom Karlsson, 2005-06-07
-#
-# This software may be used and distributed according to the terms
-# of the GNU Public License, incorporated herein by reference.
-#
+# Bifrost configuration utility
+# 
 
+export PATH=.:$PATH
+BACKTITLE="Bifrost configuration"
 
-
-# Initial greetings and stuff - - - - - - - - - - - - - - - - - - - - -
-echo
-echo -n "    Configuration script for the Bifrost Network Project "
-if [ -f /etc/.version ]; then
-    cat /etc/.version
-else
-    cat<<EOF
-
-
-    No version set (/etc/.version). Aborting...
-
-EOF
-    exit
+if grep -qs bifrost /proc/mounts|grep -qs ro; then
+    dialog --backtitle "$BACKTITLE" --title Password --msgbox "The root filesystems is mounted read-only. No changes can be made to configuration!" 0 0
 fi
-echo
-echo
 
-# Check if host is configured. - - - - - - - - - - - - - - - - - - - - - -
-if [ ! -f /etc/.configured ]; then
-    echo "Your system appears to be not yet configured."
-    echo -n "Do you want to configure your Bifrost machine ? ([y]/n): "
-    read
-    if [ ${REPLY:-y} = "n" ]; then
-	echo "Aborting script now..."
-	echo
-	exit
-    fi
-cat<<EOF
+#
+# Root password
+#
 
-If you have a configuration backup on a floppy (from a previous system),
-you may load it instead of running the configuration script by hand. If
-you are upgrading your system with a new release, it is recommended to
-load the configuration from the backup floppy now and skip the tedious
-manual procedure. Note however that new features may have been added or
-old features removed with a new release.
+if [ "$1" = password ]; then
+    ETC=${ETC:-/etc}
 
-EOF
-    echo -n "Do you want to load the configuration from floppy ? (y/[n]): "
-    read
-    if [ ${REPLY:-n} = "y" ]; then
-	echo "Starting Restore..."
-	echo "-----------------------------------------"
-	restore
-	echo "-----------------------------------------"
-	echo
-	echo "System will now have to be rebooted..."
-	echo
-	echo -n "Do you want to reboot ? ([y]/n): "
-	read
-	if [ ${REPLY:-y} = "y" ]; then
-	    echo "Remounting the disk read-only and reboot..."
-	    remount r
-	    reboot
+    dialog --backtitle "$BACKTITLE" --title Password --msgbox "You are STRONGLY encouraged to change the default passwords (hades12) for the user: root. If you already have done so, you may skip this step." 0 0
+
+    dialog --backtitle "$BACKTITLE" --title Password --yesno "Do you want to set the root password?" 0 0
+    if [ $? = 0 ]; then
+	clear
+	if passwd root; then
+	    if [ ! -f $ETC/.configured ]; then
+		touch $ETC/.configured
+	    fi
 	fi
     fi
-else
-    echo "WARNING! Your system already looks configured."
-    echo -n "Do you really want to reconfigure it ? (y/[n]): "
-    read
-    if [ ${REPLY:-n} = "n" ]; then
-	echo "Aborting script now..."
-	echo
-	exit
-    fi
+    
+    exit 0
 fi
 
-if [ -f /etc/.config ]; then
-cat<<EOF
+#
+# Hostname
+#
 
-You have an old configuration for this system saved in /etc/.config
-Do you want to load it and use as default values when running
-EOF
-    echo -n "this configuration program ? ([y]/n): "
-    read
-    if [ ${REPLY:-y} = "y" ]; then
-	source /etc/.config
-    fi
-fi
+if [ "$1" = hostname ]; then
 
+    ETC=${ETC:-/etc}
+    
+    read hostname < $ETC/HOSTNAME
 
-# Using a loop to be able to run the script over and over...
-LOOP=1
-while [ ${LOOP:-0} != 0 ]; do
+    rc=$(dialog --backtitle "$BACKTITLE" --stdout --title Hostname --inputbox "The hostname must be set to the full DNS name. Ex: computer.domain.se. Enter hostname" 0 0 "$hostname") 
+    [ $? = 0 ] || exit 0
+    echo $rc > $ETC/HOSTNAME
 
-touch /etc/.config
-touch /etc/.config.old
-cp /dev/null /etc/.config.old
-cp /etc/.config /etc/.config.old
-cp /dev/null /etc/.config
+    read V < $ETC/.version
 
-# Host will now be configured, so continue...
-cat<<EOF
+    cat <<EOF > $ETC/motd
 
-Will now configure your Bifrost router/firewall...
-
-Remember not to make any typos, as the system may
-not function if not configured The Right Way (tm).
+    Bifrost Network Project
+    version: $V
+       $rc
 
 EOF
 
-
-
-# Filters for firewall or router - - - - - - - - - - - - - -
-cat<<EOF
-Example IP filter rules may be found in the /fw-examples directory.
-Change them to fit your own network and apply with care as they
-are based on the method of "deny all and accept explicitly".
-EOF
-
-
-
-
-# Passwd - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-cat<<EOF
-
-
-Password
---------
-You are STRONGLY encouraged to change the default
-passwords (hades12) for the user: root
-
-If you already have done so, you may skip this step.
-
-EOF
-echo -n "Do you want to change password ? (y/[n]): "
-read
-if [ ${REPLY:-n} = "y" ]; then
-    echo
-    passwd root
+    exit 0
 fi
 
+#
+# DNS
+#
 
+function dnsserver {
+    rc=$(dialog --backtitle "$BACKTITLE" --stdout --inputbox "Enter dnsserver IP" 0 0 "$1") 
+    [ $? = 0 ] || return 1
+    echo $rc
+    return 0
+}
 
-# Hostname and motd - - - - - - - - - - - - - - - - - - - - - - - - -
-cat<<EOF
+function idomain {
+    rc=$(dialog --backtitle "$BACKTITLE" --stdout --inputbox "Enter DNS domain" 0 0 "$1") 
+    [ $? = 0 ] || return 1
+    echo $rc
+    return 0
+}
 
+if [ "$1" = dns ]; then
+    ETC=${ETC:-/etc}
+ 
+    DOMAIN="none"
+    s[0]="none"
+    s[1]="none"
+    s[2]="none"
+    i=0
+    exec 3<$ETC/resolv.conf
+    while read -u 3 L; do
+	if echo $L|grep -qs "^nameserver" ; then
+	    s[$i]=$(echo $L|cut -d ' ' -f 2)
+	    i=$[ i+1 ]
+	fi
+	if echo $L|grep -qs "^domain" ; then
+	    DOMAIN="$(echo $L|cut -d ' ' -f 2)"
+	fi
+    done
+    while true; do
+	rc=$(dialog --backtitle "$BACKTITLE" --stdout --title "Configure DNS" --ok-label Select --cancel-label Back --menu  "Choose" 0 0 0 Domain $DOMAIN Server1 "${s[0]}" Server2 "${s[1]}" Server3 "${s[2]}" Save "")
+	if [ $? != 0 ]; then
+	    exit 0
+	fi
 
-Hostname
---------
-The hostname must be set to the full DNS name.
+	case $rc in
+	    'Save')
+	    grep -v "^nameserver" $ETC/resolv.conf > /tmp/dnsconf.$$
+	    if [ -f /tmp/dnsconf.$$ ] ; then
+	        cat /tmp/dnsconf.$$ > $ETC/resolv.conf
+		[ "$DOMAIN" = none ] || (echo "domain $DOMAIN" >> $ETC/resolv.conf)
+		[ "${s[0]}" = none ] || (echo "nameserver ${s[0]}" >> $ETC/resolv.conf)
+		[ "${s[1]}" = none ] || (echo "nameserver ${s[1]}" >> $ETC/resolv.conf)
+		[ "${s[2]}" = none ] || (echo "nameserver ${s[2]}" >> $ETC/resolv.conf)
+		rm -f /tmp/dnsconf.$$
+	    fi
+	    ;;
+	    Domain)
+	    rc=$(idomain "$DOMAIN")
+	    [ $? = 0 ] && DOMAIN=$rc
+	    ;;
+	    Server1)
+	    rc=$(dnsserver "${s[0]}")
+	    [ $? = 0 ] && s[0]=$rc
+	    ;;
+	    Server2)
+	    rc=$(dnsserver "${s[1]}")
+	    [ $? = 0 ] && s[1]=$rc
+	    ;;
+	    Server3)
+	    rc=$(dnsserver "${s[2]}")
+	    [ $? = 0 ] && s[2]=$rc
+	    ;;
+	    esac
+    done
 
-Ex: computer.domain.se
-
-EOF
-HOST1_TMP=$HOST1
-echo -n "What is the hostname for this system ? [$HOST1]: "
-read HOST1
-if [ ${HOST1:-none} = "none" ]; then
-    HOST1=$HOST1_TMP
-fi
-touch /etc/HOSTNAME
-cp /dev/null /etc/HOSTNAME
-echo $HOST1 >> /etc/HOSTNAME
-touch /etc/motd
-cp /dev/null /etc/motd
-echo "" >> /etc/motd
-echo -n "        Bifrost Network Project " >> /etc/motd
-cat /etc/.version >> /etc/motd
-echo -n "           " >> /etc/motd
-echo $HOST1 >> /etc/motd
-echo "" >> /etc/motd
-
-echo "HOST1=\"$HOST1\"" >> /etc/.config
-hostname $HOST1
-
-
-
-# Resolv.conf - - - - - - - - - - - - - - - - - - - - - - - - -
-cat<<EOF
-
-
-DNS lookup
-----------
-By default, the firewall will not use DNS for name resolving
-(if the DNS is out, you may not be able to login on the firewall).
-You MUST therefor use IP numbers instead of DNS names when setting
-up the network and firewall filter rules. If you still need names,
-set them up in the local /etc/hosts file. However by enabling DNS
-you can do proper name lookups, which might come in handy when
-administrating the system.
-
-EOF
-echo -n "Do you want to enable DNS ? (y/[n]): "
-read
-if [ ${REPLY:-n} = "y" ]; then
-
-cat<<EOF
-
-
-Domain Name
------------
-You must set a DNS domain name for the resolver.
-
-Ex: domain.se
-
-EOF
-
-if [ ${DOMAIN:-none} = "none" ]; then
-    DOMAIN=`echo "$HOST1"|/usr/bin/tr '\056' '\040'|(read N1 DOMAIN;echo "$DOMAIN")`
-    DOMAIN=`echo "$DOMAIN"|/usr/bin/tr '\040' '\056'`
-fi
-
-DOMAIN_TMP=$DOMAIN
-echo -n "What is the domain name for this system ? [$DOMAIN]: "
-read DOMAIN
-if [ ${DOMAIN:-none} = "none" ]; then
-    DOMAIN=$DOMAIN_TMP
-fi
-touch /etc/resolv.conf
-cp /dev/null /etc/resolv.conf
-echo "domain $DOMAIN" >> /etc/resolv.conf
-
-echo "DOMAIN=\"$DOMAIN\"" >> /etc/.config
-
-cat<<EOF
-
-
-DNS Servers
------------
-The DNS servers are entered one by one starting with the one
-closest to your system (counting router hops).
-You will be able to enter three name servers. Just pressing
-<RETURN> will skip that entry (if you for example only have
-one or two servers) or use the default value (if one exist).
-You must use the servers IP numbers and not their names.
-
-Ex: 130.238.98.11
-
-EOF
-DNS0_TMP=$DNS0
-echo -n "Name server nr 1 [$DNS0]: "
-read DNS0
-if [ ${DNS0:-none} != "none" ]; then
-    echo "nameserver $DNS0" >> /etc/resolv.conf
-elif [ ${DNS0_TMP:-none} != "none" ]; then
-    echo "nameserver $DNS0_TMP" >> /etc/resolv.conf
-    DNS0=$DNS0_TMP
-fi
-DNS1_TMP=$DNS1
-echo -n "Name server nr 2 [$DNS1]: "
-read DNS1
-if [ ${DNS1:-none} != "none" ]; then
-    echo "nameserver $DNS1" >> /etc/resolv.conf
-elif [ ${DNS1_TMP:-none} != "none" ]; then
-    echo "nameserver $DNS1_TMP" >> /etc/resolv.conf
-    DNS1=$DNS1_TMP
-fi
-DNS2_TMP=$DNS2
-echo -n "Name server nr 3 [$DNS2]: "
-read DNS2
-if [ ${DNS2:-none} != "none" ]; then
-    echo "nameserver $DNS2" >> /etc/resolv.conf
-elif [ ${DNS2_TMP:-none} != "none" ]; then
-    echo "nameserver $DNS2_TMP" >> /etc/resolv.conf
-    DNS2=$DNS2_TMP
+    exit 0
 fi
 
-echo "DNS0=\"$DNS0\"" >> /etc/.config
-echo "DNS1=\"$DNS1\"" >> /etc/.config
-echo "DNS2=\"$DNS2\"" >> /etc/.config
-
-fi # end of no-DNS
-
-
-
-# Number of NICs - - - - - - - - - - - - - - - - - - - - - - -
-cat<<EOF
-
+#
+# Interfaces
+#
 
 Network Devices
----------------
-You will now configure the network devices. They will be
-configured one at a time starting with eth0. You must supply
-the script with the correct:
 
-    IP/Netmask          (Ex: 130.238.127.42/30 or 130.238.99.2/24)
-    default gateway     (only asked for eth0, Ex: 130.238.127.41)
+function getipaddr {
+    rc=$(dialog --backtitle "$BACKTITLE" --stdout --inputbox "$1" 0 0 "$2") 
+    [ $? = 0 ] || return 1
+    echo $rc
+    return 0
+}
 
-Note! Netmask in the CIDR represention form /xx only.
+function confniclist {
+    for f in $ETC/config.flags/*.nic; do
+	[ ! -f "$f" ] && continue
+	f=${f##*/}
+	echo ${f/.nic/}
+    done
+}
 
-EOF
+function ifphys {
+    ifname=$1
 
-NICS_TMP=$NICS
-echo "The following interfaces are currently detected on your system:"
-ls /sys/class/net
-echo "How many Ethernet interfaces do you want to configure ?"
-echo -n "Enter a number between 1 and 16 [$NICS]: "
-read NICS
-if [ ${NICS:-none} = "none" ]; then
-    NICS=$NICS_TMP
-fi
-echo "NICS=\"$NICS\"" >> /etc/.config
+    IP4ADDR=""
+    IP4MASK=""
+    IP6ADDR=""
+    IP6MASK=""
+    BROADCAST="255.255.255.255"
+    [ -f $ETC/config.data/${ifname}.nic ] && . $ETC/config.data/${ifname}.nic
+    [ "$DHCP_CLIENT" = yes ] || DHCP_CLIENT=no
+    
+    [ "$CONFIG_NO_SPOOF" ] || CONFIG_NO_SPOOF=yes
+    [ "$CONFIG_NO_SOURCE" ] || CONFIG_NO_SOURCE=yes
+    [ "$CONFIG_PROXY_ARP" ] || CONFIG_PROXY_ARP=no
+    [ "$CONFIG_REDIRECT" ] || CONFIG_REDIRECT=yes
+    [ "$CONFIG_ACCEPT_REDIRECT" ] || CONFIG_ACCEPT_REDIRECT=no
+    [ "$CONFIG_LOG_MARTIANS" ] || CONFIG_LOG_MARTIANS=yes
 
+    while true; do
+	rc=$(dialog --stdout --backtitle "$BACKTITLE" --title "Configure $ifname" --ok-label Select --cancel-label Cancel --default-item "$item" --menu  "Choose" 0 0 0 DHCP "$DHCP_CLIENT" IP4ADDR "$IP4ADDR" IP4PREFIX "$IP4MASK" IP6ADDR "$IP6ADDR" IP6PREFIX "$IP6MASK" no_spoof "$CONFIG_NO_SPOOF" no_source "$CONFIG_NO_SOURCE" proxy_arp "$CONFIG_PROXY_ARP" redirect "$CONFIG_REDIRECT" accept_redirect "$CONFIG_ACCEPT_REDIRECT" log_martians "$CONFIG_LOG_MARTIANS" description "$DESCRIPTION" Save  "")
+	[ $? = 0 ] || return 0
 
+	item="$rc"
 
-# Interfaces - - - - - - - - - - - - - - - - - - - - - - - - -
-BC=255.255.255.255
-rm -f /etc/config.flags/eth*.nic
-
-I=0
-while [ $I != $NICS ]; do
-    echo
-    echo "eth$I"
-    echo "-----"
-    echo
-
-    case IP$I in ( IP0 ) IP=$IP0; IPRAW=$IPRAW0; NM=$NM0; IP6A=$IP6A0; IP6RAW=$IP6RAW0; IP6NM=$IP6NM0; DESCRIPTION=$DESCRIPTION0;;
-		 ( IP1 ) IP=$IP1; IPRAW=$IPRAW1; NM=$NM1; IP6A=$IP6A1; IP6RAW=$IP6RAW1; IP6NM=$IP6NM1; DESCRIPTION=$DESCRIPTION1;;
-		 ( IP2 ) IP=$IP2; IPRAW=$IPRAW2; NM=$NM2; IP6A=$IP6A2; IP6RAW=$IP6RAW2; IP6NM=$IP6NM2; DESCRIPTION=$DESCRIPTION2;;
-		 ( IP3 ) IP=$IP3; IPRAW=$IPRAW3; NM=$NM3; IP6A=$IP6A3; IP6RAW=$IP6RAW3; IP6NM=$IP6NM3; DESCRIPTION=$DESCRIPTION3;;
-		 ( IP4 ) IP=$IP4; IPRAW=$IPRAW4; NM=$NM4; IP6A=$IP6A4; IP6RAW=$IP6RAW4; IP6NM=$IP6NM4; DESCRIPTION=$DESCRIPTION4;;
-		 ( IP5 ) IP=$IP5; IPRAW=$IPRAW5; NM=$NM5; IP6A=$IP6A5; IP6RAW=$IP6RAW5; IP6NM=$IP6NM5; DESCRIPTION=$DESCRIPTION5;;
-		 ( IP6 ) IP=$IP6; IPRAW=$IPRAW6; NM=$NM6; IP6A=$IP6A6; IP6RAW=$IP6RAW6; IP6NM=$IP6NM6; DESCRIPTION=$DESCRIPTION6;;
-		 ( IP7 ) IP=$IP7; IPRAW=$IPRAW7; NM=$NM7; IP6A=$IP6A7; IP6RAW=$IP6RAW7; IP6NM=$IP6NM7; DESCRIPTION=$DESCRIPTION7;;
-		 ( IP8 ) IP=$IP8; IPRAW=$IPRAW8; NM=$NM8; IP6A=$IP6A8; IP6RAW=$IP6RAW8; IP6NM=$IP6NM8; DESCRIPTION=$DESCRIPTION8;;
-		 ( IP9 ) IP=$IP9; IPRAW=$IPRAW9; NM=$NM9; IP6A=$IP6A9; IP6RAW=$IP6RAW9; IP6NM=$IP6NM9; DESCRIPTION=$DESCRIPTION9;;
-		 ( IP10 ) IP=$IP10; IPRAW=$IPRAW10; NM=$NM10; IP6A=$IP6A10; IP6RAW=$IP6RAW10; IP6NM=$IP6NM10; DESCRIPTION=$DESCRIPTION10;;
-		 ( IP11 ) IP=$IP11; IPRAW=$IPRAW11; NM=$NM11; IP6A=$IP6A11; IP6RAW=$IP6RAW11; IP6NM=$IP6NM11; DESCRIPTION=$DESCRIPTION11;;
-		 ( IP12 ) IP=$IP12; IPRAW=$IPRAW12; NM=$NM12; IP6A=$IP6A12; IP6RAW=$IP6RAW12; IP6NM=$IP6NM12; DESCRIPTION=$DESCRIPTION12;;
-		 ( IP13 ) IP=$IP13; IPRAW=$IPRAW13; NM=$NM13; IP6A=$IP6A13; IP6RAW=$IP6RAW13; IP6NM=$IP6NM13; DESCRIPTION=$DESCRIPTION13;;
-		 ( IP14 ) IP=$IP14; IPRAW=$IPRAW14; NM=$NM14; IP6A=$IP6A14; IP6RAW=$IP6RAW14; IP6NM=$IP6NM14; DESCRIPTION=$DESCRIPTION14;;
-		 ( IP15 ) IP=$IP15; IPRAW=$IPRAW15; NM=$NM15; IP6A=$IP6A15; IP6RAW=$IP6RAW15; IP6NM=$IP6NM15; DESCRIPTION=$DESCRIPTION15;;
-    esac
-
-    IP_TMP=$IPRAW
-    echo -n "IP address [$IPRAW]: "
-    read IPRAW
-    if [ ${IPRAW:-none} = "none" ]; then
-	IPRAW=$IP_TMP
-    fi
-
-
-    # Check if it's just an IP-number or IP with included netmask
-    IP_NM=`echo "$IPRAW"|tr '\057' '\040'|(read N1 N2;echo "$N2")`
-    if [ ${IP_NM:-none} != "none" ]; then
-	NM=$IP_NM
-	IP=`echo "$IPRAW"|tr '\057' '\040'|(read N1 N2;echo "$N1")`
-    else
-	IP=$IPRAW
-    fi
-
-    export IP$I="$IP"
-    export IPRAW$I="$IPRAW"
-    echo "IP$I=\"$IP\"" >> /etc/.config
-    echo "IPRAW$I=\"$IPRAW\"" >> /etc/.config
-
-
-    # Ask for netmask if no one was given before
-    if [ ${IP_NM:-none} = "none" ]; then
-	if [ ${NM:-none} = "none" ]; then
-	    NM=24
+	if [ "$rc" = DHCP ]; then
+	    [ "$DHCP_CLIENT" = no ] && DHCP_CLIENT=yes && continue
+	    DHCP_CLIENT=no
 	fi
-	NM_TMP=$NM
-	echo -n "Netmask in the CIDR represention form xx [$NM]: "
-	read NM
-	if [ ${NM:-none} = "none" ]; then
-	    NM=$NM_TMP
+	[ "$rc" = no_spoof ] && [ "$CONFIG_NO_SPOOF" = yes ] && CONFIG_NO_SPOOF=no && continue
+	[ "$rc" = no_spoof ] && [ "$CONFIG_NO_SPOOF" = no ] && CONFIG_NO_SPOOF=yes && continue
+	[ "$rc" = no_source ] && [ "$CONFIG_NO_SOURCE" = yes ] && CONFIG_NO_SOURCE=no && continue
+	[ "$rc" = no_source ] && [ "$CONFIG_NO_SOURCE" = no ] && CONFIG_NO_SOURCE=yes && continue
+	[ "$rc" = proxy_arp ] && [ "$CONFIG_PROXY_ARP" = yes ] && CONFIG_PROXY_ARP=no && continue
+	[ "$rc" = proxy_arp ] && [ "$CONFIG_PROXY_ARP" = no ] && CONFIG_PROXY_ARP=yes && continue
+	[ "$rc" = redirect ] && [ "$CONFIG_REDIRECT" = yes ] && CONFIG_REDIRECT=no && continue
+	[ "$rc" = redirect ] && [ "$CONFIG_REDIRECT" = no ] && CONFIG_REDIRECT=yes && continue
+	[ "$rc" = accept_redirect ] && [ "$CONFIG_ACCEPT_REDIRECT" = yes ] && CONFIG_ACCEPT_REDIRECT=no && continue
+	[ "$rc" = accept_redirect ] && [ "$CONFIG_ACCEPT_REDIRECT" = no ] && CONFIG_ACCEPT_REDIRECT=yes && continue
+	[ "$rc" = log_martians ] && [ "$CONFIG_LOG_MARTIANS" = yes ] && CONFIG_LOG_MARTIANS=no && continue
+	[ "$rc" = log_martians ] && [ "$CONFIG_LOG_MARTIANS" = no ] && CONFIG_LOG_MARTIANS=yes && continue
+
+	if [ "$rc" = IP4ADDR ]; then
+	    rc=$(getipaddr "Enter IPv4 address" "$IP4ADDR")
+	    if [ $? = 0 ]; then
+		if [[ $rc =~ / ]]; then
+		    IP4ADDR=${rc%%/*}
+		    IP4MASK=${rc##*/}
+		else
+		    IP4ADDR="$rc"
+		fi
+	    fi
 	fi
-    fi
-
-    export NM$I="$NM"
-    echo "NM$I=\"$NM\"" >> /etc/.config
-
-
-    #-- similar but for IPv6
-    IP6_TMP=$IP6RAW
-    echo -n "IPv6 address [$IP6RAW]: "
-    read IP6RAW
-    if [ ${IP6RAW:-none} = "none" ]; then
-	IP6RAW=$IP6_TMP
-    fi
-
-    # Check if it's just an IP-number or IP with included netmask
-    IP6_NM=`echo "$IP6RAW"|tr '\057' '\040'|(read N1 N2;echo "$N2")`
-    if [ ${IP6_NM:-none} != "none" ]; then
-	IP6NM=$IP6_NM
-	IP6A=`echo "$IP6RAW"|tr '\057' '\040'|(read N1 N2;echo "$N1")`
-    else
-	IP6A=$IP6RAW
-    fi
-
-    export IP6A$I="$IP6A"
-    export IP6RAW$I="$IP6RAW"
-    echo "IP6A$I=\"$IP6A\"" >> /etc/.config
-    echo "IP6RAW$I=\"$IP6RAW\"" >> /etc/.config
-
-    # Ask for netmask if no one was given before AND an address was
-    if [ ${IP6_NM:-none} = "none" -a "$IP6A" != "" ]; then
-	if [ ${NM6:-none} = "none" ]; then
-	    NM6=64
+	if [ "$rc" = IP4PREFIX ]; then
+	    rc=$(getipaddr "Enter IPv4 prefix length" "$IP4MASK")
+	    [ $? = 0 ] && IP4MASK="$rc"
 	fi
-	NM6_TMP=$NM6
-	echo -n "Netmask in the CIDR represention form xx [$NM6]: "
-	read NM6
-	if [ ${NM6:-none} = "none" ]; then
-	    NM6=$NM6_TMP
+	if [ "$rc" = IP6ADDR ]; then
+	    rc=$(getipaddr "Enter IPv6 address" "$IP6ADDR")
+	    if [ $? = 0 ]; then
+		if [[ $rc =~ / ]]; then
+		    IP6ADDR=${rc%%/*}
+		    IP6MASK=${rc##*/}
+		else
+		    IP6ADDR="$rc"
+		fi
+	    fi
 	fi
-    fi
+	if [ "$rc" = IP6PREFIX ]; then
+	    rc=$(getipaddr "Enter IPv6 prefix length" "$IP6MASK")
+	    [ $? = 0 ] && IP6MASK="$rc"
+	fi
+	if [ "$rc" = BROADCAST ]; then
+	    rc=$(getipaddr "Enter IPv4 broadcast address" "$BROADCAST")
+	    [ $? = 0 ] && BROADCAST="$rc"
+	fi
+	if [ "$rc" = description ]; then
+	    rc=$(getipaddr "Enter a short description" "$DESCRIPTION")
+	    [ $? = 0 ] && DESCRIPTION="$rc"
+	fi
 
-    export NM6$I="$NM6"
-    echo "NM6$I=\"$NM6\"" >> /etc/.config
-
-
-    # Description for the interface
-    DESCRIPTION_TMP=$DESCRIPTION
-    echo "Add a short description for this interface"
-    echo "[$DESCRIPTION]"
-    echo -n ": "
-    read DESCRIPTION
-# Fix for compare with a string
-    export D3="`echo "$DESCRIPTION"|(read D1 D2;echo "$D1")`"
-
-    if [ ${D3:-none} = "none" ]; then
-	DESCRIPTION=$DESCRIPTION_TMP
-    fi
-    export DESCRIPTION$I="$DESCRIPTION"
-    echo "DESCRIPTION$I=\"$DESCRIPTION\"" >> /etc/.config
-
-    echo "$IP  $HOST1" >> /etc/hosts
-
-
-    touch /etc/config.data/eth$I.nic
-    cp /dev/null /etc/config.data/eth$I.nic
-    chmod 0400 /etc/config.data/eth$I.nic
-    cat >> /etc/config.data/eth$I.nic <<EOF
-export IP4ADDR=$IP
-export IP4MASK=$NM
-export IP6ADDR=$IP6A
-export IP6MASK=$NM6
-export BROADCAST=$BC
-export CONFIG_NO_SPOOF=yes
-export CONFIG_NO_SOURCE=yes
-export CONFIG_PROXY_ARP=no
-export CONFIG_REDIRECT=yes
-export CONFIG_ACCEPT_REDIRECT=no
-export CONFIG_LOG_MARTIANS=yes
+	if [ "$rc" = Save ]; then
+	    cat > $ETC/config.data/${ifname}.nic <<EOF
+export IP4ADDR=$IP4ADDR
+export IP4MASK=$IP4MASK
+export IP6ADDR=$IP6ADDR
+export IP6MASK=$IP6MASK
+export BROADCAST=$BROADCAST
+export CONFIG_NO_SPOOF=$CONFIG_NO_SPOOF
+export CONFIG_NO_SOURCE=$CONFIG_NO_SOURCE
+export CONFIG_PROXY_ARP=$CONFIG_PROXY_ARP
+export CONFIG_REDIRECT=$CONFIG_REDIRECT
+export CONFIG_ACCEPT_REDIRECT=$CONFIG_ACCEPT_REDIRECT
+export CONFIG_LOG_MARTIANS=$CONFIG_LOG_MARTIANS
 export DESCRIPTION="$DESCRIPTION"
 EOF
+            echo "yes" >> $ETC/config.flags/${ifname}.nic
+	fi
+    done
+    exit 0
+}
 
-    touch /etc/config.flags/eth$I.nic
-    chmod 0400 /etc/config.flags/eth$I.nic
-    echo "yes" >> /etc/config.flags/eth$I.nic
-
-    I=`let CALC=$I+1;echo $CALC`
-
-done # end of NIC config
-
-
-
-# rc.inet.routes - - - - - - - - - - - - - - - - - - - - - - - - -
-if [ ${GW:-none} = "none" ]; then
-    GW=`echo "$IP0"|/usr/bin/tr '\056' '\040'|(read N1 N2 N3 N4;echo "$N1.$N2.$N3.2")`
-fi
-GW_TMP=$GW
-echo
-echo -n "Default gateway [$GW]: "
-read GW
-if [ ${GW:-none} = "none" ]; then
-    GW=$GW_TMP
-fi
-echo "GW=\"$GW\"" >> /etc/.config
-
-touch /etc/config.data/inet.routes
-cp /dev/null /etc/config.data/inet.routes
-chmod 0400 /etc/config.data/inet.routes
-cat >> /etc/config.data/inet.routes <<EOF
-export GATEWAY=$GW
-EOF
-
-# ramlog
-cat<<EOF
-ramlog - persistent logs
-------------------------
-If you enable ramlog the contents of /var/log will be copied to/from
-your rootfs at boot and reboot/halt.
-
-EOF
-echo -n "Enable ramlog [y/[n]: "
-read
-if [ ${REPLY:-n} = "y" ]; then
-    RAMLOG=yes
-    echo "yes" >/etc/config.flags/ramlog
+if [ "$1" = if ]; then
+    ETC=${ETC:-/etc}
+    
+    F=/tmp/ifcfg.$$
+    while true; do
+	nics="$((ifinfo|grep -v lo;confniclist)|sort|uniq)"
+	cp /dev/null $F
+	for nic in $nics; do
+	    echo \"$nic\" \"$(ifinfo -w -s - -i $nic driver)$(ifinfo -w -s Mbit- -i $nic speedmax)$(ifinfo -w -i $nic bus_info)\" >> $F
+	done
+    
+	rc=$(dialog --stdout --backtitle "$BACKTITLE" --title "Configure interfaces" --ok-label Select --cancel-label Cancel --menu  "Choose interface" 0 0 0 --file $F)
+	
+	[ $? = 0 ] || exit 0
+	
+	ifphys $rc
+    done
+    exit 0
 fi
 
-# syslog.conf - - - - - - - - - - - - - - - - - - - - - -
-cat<<EOF
+#
+# Gateway
+#
 
-
-Syslog Server
--------------
-If you have a computer on your network that is able to receive
-syslog information, you may use it to gather logs from your firewall.
-Please use the IP address and not the DNS name to the syslog server.
-
-If you choose not to use a syslog server, the console will be
-used by default instead.
-
+if [ "$1" = gateway ]; then
+    ETC=${ETC:-/etc}
+    
+    . $ETC/config.data/inet.routes &> /dev/null
+    GATEWAY=$(dialog --backtitle "$BACKTITLE" --stdout --title "Default gateway" --inputbox "Enter default gateway" 0 0 "$GATEWAY")
+    [ $? = 0 ] || exit 0
+    cat > $ETC/config.data/inet.routes <<EOF
+export GATEWAY=$GATEWAY
 EOF
 
-touch /etc/syslog.conf
-cp /dev/null /etc/syslog.conf
+    exit 0
+fi
 
-echo -n "Do you want to use a syslog server ? (y/[n]): "
-read
-if [ ${REPLY:-n} = "y" ]; then
-    echo
-    SS_TMP=$SS
-    echo -n "What is the IP address of the syslog server ? [$SS]: "
-    read SS
-    if [ ${SS:-none} = "none" ]; then
-	SS=$SS_TMP
+#
+# Services
+#
+
+if [ "$1" = services ]; then
+    ETC=${ETC:-/etc}
+
+    read cron < $ETC/config.flags/cron || cron=yes
+    read dhcpd < $ETC/config.flags/dhcpd || dhcpd=no
+    read rtcache < $ETC/config.flags/disable-route-cache || rtcache=yes
+    read dnsmasq < $ETC/config.flags/dnsmasq || dnsmasq=no
+    read fsck < $ETC/config.flags/fsck || fsck=no
+    read fw6rules < $ETC/config.flags/fw6rules || fw6rules=no
+    read fwrules < $ETC/config.flags/fwrules || fwrules=no
+    read ifrename < $ETC/config.flags/ifrename || ifrename=no
+    read ifstat2 < $ETC/config.flags/ifstat2 || ifstat2=yes
+    read inetd < $ETC/config.flags/inetd || inetd=no
+    read ipmi < $ETC/config.flags/ipmi || ipmi=yes
+    read ipv4forward < $ETC/config.flags/ipv4-forward || ipv4forward=yes
+    read ipv6forward < $ETC/config.flags/ipv6-forward || ipv6forward=no
+    read ntp < $ETC/config.flags/ntp || ntp=no
+    read ramlog < $ETC/config.flags/ramlog || ramlog=no
+    read sshd < $ETC/config.flags/sshd || sshd=yes
+    read swedishkeyboard < $ETC/config.flags/swedish-keyboard || swedishkeyboard=yes
+    
+    [ "$cron" = yes ] && cron=on; [ "$cron" = no ] && cron=off
+    [ "$dhcpd" = yes ] && dhcpd=on; [ "$dhcpd" = no ] && dhcpd=off
+    [ "$rtcache" = yes ] && rtcache=on; [ "$rtcache" = no ] && rtcache=off
+    [ "$dnsmasq" = yes ] && dnsmasq=on; [ "$dnsmasq" = no ] && dnsmasq=off
+    [ "$fsck" = yes ] && fsck=on; [ "$fsck" = no ] && fsck=off
+    [ "$fw6rules" = yes ] && fw6rules=on; [ "$fw6rules" = no ] && fw6rules=off
+    [ "$fwrules" = yes ] && fwrules=on; [ "$fwrules" = no ] && fwrules=off
+    [ "$ifrename" = yes ] && ifrename=on; [ "$ifrename" = no ] && ifrename=off
+    [ "$ifstat2" = yes ] && ifstat2=on; [ "$ifstat2" = no ] && ifstat2=off
+    [ "$inetd" = yes ] && inetd=on; [ "$inetd" = no ] && inetd=off
+    [ "$ipmi" = yes ] && ipmi=on; [ "$ipmi" = no ] && ipmi=off
+    [ "$ipv4forward" = yes ] && ipv4forward=on; [ "$ipv4forward" = no ] && ipv4forward=off
+    [ "$ipv6forward" = yes ] && ipv6forward=on; [ "$ipv6forward" = no ] && ipv6forward=off
+    [ "$ntp" = yes ] && ntp=on; [ "$ntp" = no ] && ntp=off
+    [ "$ramlog" = yes ] && ramlog=on; [ "$ramlog" = no ] && ramlog=off
+    [ "$sshd" = yes ] && sshd=on; [ "$sshd" = no ] && sshd=off
+    [ "$swedishkeyboard" = yes ] && swedishkeyboard=on; [ "$swedishkeyboard" = no ] && swedishkeyboard=off
+    
+    rc=$(dialog --backtitle "$BACKTITLE" --stdout --ok-label Apply --separate-output --default-item "$item" --title "Configure services" --checklist "Core services" 0 0 0 cron "Cron daemon" $cron dhcpd "DHCP daemon" $dhcpd rtcache "Disable route cache" $rtcache dnsmasq "Dnsmasq" $dnsmasq fsck "Extra fsck at boot" $fsck fw6rules "IPv6 firewall" $fw6rules fwrules "IPv4 firewall" $fwrules ifrename "Renaming of interfaces" $ifrename ifstat2 "Ifstat2 daemon for network statistics" $ifstat2 inetd "Inetd services" $inetd ipmi "Load ipmi modules for ipmitool" $ipmi ipv4forward "Enable IPv4 forwarding" $ipv4forward ipv6forward "Enable IPv6 forwarding" $ipv6forward ntp "NTP daemon" $ntp ramlog "Persistent ramlog" $ramlog sshd "SSH daemon" $sshd swedishkeyboard "Swedish keyboard" $swedishkeyboard)
+    [ $? = 0 ] || exit 0
+    
+    item=$rc
+    
+    cron=no; [[ "$rc" =~ cron ]] && cron=yes; echo $cron > $ETC/config.flags/cron
+    dhcpd=no; [[ "$rc" =~ dhcpd ]] && dhcpd=yes; echo $dhcpd > $ETC/config.flags/dhcpd
+    rtcache=no; [[ "$rc" =~ rtcache ]] && rtcache=yes; echo $rtcache > $ETC/config.flags/disable-route-cache
+    dnsmasq=no; [[ "$rc" =~ dnsmasq ]] && dnsmasq=yes; echo $dnsmasq > $ETC/config.flags/dnsmasq
+    fsck=no; [[ "$rc" =~ fsck ]] && fsck=yes; echo $fsck > $ETC/config.flags/fsck
+    fw6rules=no; [[ "$rc" =~ fw6rules ]] && fw6rules=yes; echo $fw6rules > $ETC/config.flags/fw6rules
+    fwrules=no; [[ "$rc" =~ fwrules ]] && fwrules=yes; echo $fwrules > $ETC/config.flags/fwrules
+    ifrename=no; [[ "$rc" =~ ifrename ]] && ifrename=yes; echo $ifrename > $ETC/config.flags/ifrename
+    ifstat2=no; [[ "$rc" =~ ifstat2 ]] && ifstat2=yes; echo $ifstat2 > $ETC/config.flags/ifstat2
+    inetd=no; [[ "$rc" =~ inetd ]] && inetd=yes; echo $inetd > $ETC/config.flags/inetd
+    ipmi=no; [[ "$rc" =~ ipmi ]] && ipmi=yes; echo $ipmi > $ETC/config.flags/ipmi
+    ipv4forward=no; [[ "$rc" =~ ipv4forward ]] && ipv4forward=yes; echo $ipv4forward > $ETC/config.flags/ipv4-forward
+    ipv6forward=no; [[ "$rc" =~ ipv6forward ]] && ipv6forward=yes; echo $ipv6forward > $ETC/config.flags/ipv6-forward
+    ntp=no; [[ "$rc" =~ ntp ]] && ntp=yes; echo $ntp > $ETC/config.flags/ntp
+    ramlog=no; [[ "$rc" =~ ramlog ]] && ramlog=yes; echo $ramlog > $ETC/config.flags/ramlog
+    sshd=no; [[ "$rc" =~ sshd ]] && sshd=yes; echo $sshd > $ETC/config.flags/sshd
+    swedishkeyboard=no; [[ "$rc" =~ swedishkeyboard ]] && swedishkeyboard=yes; echo $swedishkeyboard > $ETC/config.flags/swedish-keyboard
+	
+    exit 0
+fi
+
+#
+# Syslog
+#
+
+if [ "$1" = syslog ]; then
+    ETC=${ETC:-/etc}
+
+    dialog --backtitle "$BACKTITLE" --title "Syslog server" --yesno "Do you want to log to a syslog server?" 0 0
+    if [ $? = 0 ]; then
+	SS="$(cat $ETC/syslog.conf|tr -s ' '|cut -d ' ' -f 2|cut -d '@' -f 2)"
+	SS=$(dialog --backtitle "$BACKTITLE" --stdout --title "Syslog server" --inputbox "Enter syslog server" 0 0 "$SS")
+	[ $? = 0 ] || exit 0
+	cat > $ETC/syslog.conf <<EOF
+*.*   -@$SS
+EOF
+       exit 0
     fi
-echo "SS=\"$SS\"" >> /etc/.config
 
-cat >> /etc/syslog.conf <<EOF
-*.*			-@$SS
+    cat > $ETC/syslog.conf <<EOF
+*.*    console
 EOF
-else
-cat >> /etc/syslog.conf <<EOF
-*.*			console
-EOF
+
+    exit 0
 fi
 
-cat<<EOF
-
-
-Generating SSH Keys
--------------------
-To authenticate the firewall when using SSH, you will need to generate
-key pairs for the system, as well as for the root user (RSA1, RSA and DSA).
-This will now be done for you.
-
-If you wish, you can set a password phrase to use with RSA1/RSA/DSA
-authentication instead of a regular password. It is not needed for normal
-use, so you may leave it empty by just pressing <RETURN> when asked for
-a password phrase.
-
-
-NOTE! Please edit the sshd tcp-wrapper entry in /etc/hosts.allow.
-
-
-EOF
-echo -n "RSA1/RSA/DSA Password phrase [<none>]: "
-read $RSA
-echo
-echo "Generating system keys:"
-ssh-keygen -t rsa1 -P "" -N "" -f /etc/ssh/ssh_host_key
-ssh-keygen -t rsa -P "" -N "" -f /etc/ssh/ssh_host_rsa_key
-ssh-keygen -t dsa -P "" -N "" -f /etc/ssh/ssh_host_dsa_key
-echo
-echo "Generating root user keys:"
-if [ ${RSA:-none} != "none" ]; then
-    ssh-keygen -t rsa1 -P "" -N "" -f /.ssh/identity
-    ssh-keygen -t rsa -P "" -N "" -f /.ssh/id_rsa
-    ssh-keygen -t dsa -P "" -N "" -f /.ssh/id_dsa
-else
-    ssh-keygen -t rsa1 -P $PASS -N $PASS -f /.ssh/identity
-    ssh-keygen -t rsa -P $PASS -N $PASS -f /.ssh/id_rsa
-    ssh-keygen -t dsa -P $PASS -N $PASS -f /.ssh/id_dsa
+if [ "$1" ]; then
+    echo "The option \'$1\' is not supported!"
+    echo
+    exit 1
 fi
 
-# Telnet and ftp - - - - - - - - - - - - - - - - - - - - - -
-cat<<EOF
+item="root password"
 
+while true; do
+    rc=$(dialog --backtitle "$BACKTITLE" --stdout --default-item "$item" --title "Main menu" --ok-label Select --cancel-label Cancel --menu "Choose section" 0 0 0 "Root password" "" "Hostname" "" DNS "" "Network devices" "" Gateway "" Services "" Syslog "" "Remount rootfs writable" "")
 
-Allowing Telnet and Ftp
------------------------
-If really needed, you can allow telnet and ftp sessions to your firewall,
-but they must then be controlled by filter rules, as no tcp wrapper is
-installed by default (just an example of a tcp-wrapper). It is STRONGLY
-advised not to activate telnet and ftp on a router/firewall, due to the
-unprotected (no crypto or authentication) connection.
+    [ $? = 0 ] || exit 0
+    
+    [ "$rc" = "Root password" ] && item="Hostname" && configure password && continue
+    [ "$rc" = "Hostname" ] && item="DNS" && configure hostname  && continue
+    [ "$rc" = "DNS" ] && item="Network devices" && configure dns && continue
+    [ "$rc" = "Network devices" ] && item="Gateway" && configure if && continue
+    [ "$rc" = "Gateway" ] && item="Services" && configure gateway && continue
+    [ "$rc" = "Services" ] && item="Syslog" && configure services && continue
+    [ "$rc" = "Syslog" ] && item="root password" && configure syslog && continue
 
-EOF
-echo -n "Do you want to allow telnet and ftp ? (y/[n]): "
-read TELNET
-if [ ${TELNET:-n} = "n" ]; then
-cat<<EOF
-
-Inetd will stay deactivated (by default) and therefor also telnet and ftp.
-
-EOF
-else
-cat<<EOF
-
-Will activate inetd at boot time. As telnet and ftp are commented in
-/etc/inetd.conf, they will stay deactivated by default. To use telnet and/or
-ftp you will need to uncomment them in /etc/inetd.conf by hand and restart
-inetd. Remember to create filter rules to protect the local Bifrost logins
-via telnet and ftp, as well as edit the /etc/hosts.allow wrapper file.
-
-EOF
-cp /dev/null /etc/config.flags/inetd
-echo "yes" >> /etc/config.flags/inetd
-
-fi
-
-cat<<EOF
-
-Press <RETURN> to continue...
-EOF
-read
-
-
-
-# Show settings - - - - - - - - - - - - - - - - - - - - - -
-cat<<EOF
-
-
-Press <RETURN> to view the final system settings...
-EOF
-read
-
-cat<<EOF
-
-
-Final Settings
---------------
-The system has been configured with the following settings:
-
-hostname: $HOST1
-EOF
-if [ ${DNS0:-none} != "none" ]; then
-    echo "domain: $DOMAIN"
-fi
-echo
-if [ ${DNS0:-none} != "none" ]; then
-    echo "DNS server: $DNS0"
-fi
-if [ ${DNS1:-none} != "none" ]; then
-    echo "DNS server: $DNS1"
-fi
-if [ ${DNS2:-none} != "none" ]; then
-    echo "DNS server: $DNS2"
-fi
-if [ ${RAMLOG:-none} != "none" ]; then
-    echo "ramlog: $RAMLOG"
-fi
-if [ ${SS:-none} != "none" ]; then
-    echo "syslog host: $SS"
-fi
-
-
-
-if [ ${IP0:-0} != "0" ]; then
-echo "Desc: $DESCRIPTION0"
-echo "eth0: IP=$IP0/$NM0  BC=$BC  GW=$GW"
-[ -s $IP6A0 ] || echo "eth0: IPv6=$IP6A0/$NM60"
-echo
-fi
-
-if [ ${IP1:-0} != "0" ]; then
-echo "Desc: $DESCRIPTION1"
-echo "eth1: IP=$IP1/$NM1  BC=$BC"
-[ -s $IP6A1 ] || echo "eth1: IPv6=$IP6A1/$NM61"
-echo
-fi
-
-if [ ${IP2:-0} != "0" ]; then
-echo "Desc: $DESCRIPTION2"
-echo "eth2: IP=$IP2/$NM2  BC=$BC"
-[ -s $IP6A2 ] || echo "eth2: IPv6=$IP6A2/$NM62"
-echo
-fi
-
-if [ ${IP3:-0} != "0" ]; then
-echo "Desc: $DESCRIPTION3"
-echo "eth3: IP=$IP3/$NM3  BC=$BC"
-[ -s $IP6A3 ] || echo "eth3: IPv6=$IP6A3/$NM63"
-echo
-read -p "Press <RETURN> to continue..."
-fi
-
-if [ ${IP4:-0} != "0" ]; then
-echo "Desc: $DESCRIPTION4"
-echo "eth4: IP=$IP4/$NM4  BC=$BC"
-[ -s $IP6A4 ] || echo "eth4: IPv6=$IP6A4/$NM64"
-echo
-fi
-
-if [ ${IP5:-0} != "0" ]; then
-echo "Desc: $DESCRIPTION5"
-echo "eth5: IP=$IP5/$NM5  BC=$BC"
-[ -s $IP6A5 ] || echo "eth5: IPv6=$IP6A5/$NM65"
-echo
-fi
-
-if [ ${IP6:-0} != "0" ]; then
-echo "Desc: $DESCRIPTION6"
-echo "eth6: IP=$IP6/$NM6  BC=$BC"
-[ -s $IP6A6 ] || echo "eth6: IPv6=$IP66/$NM66"
-echo
-read -p "Press <RETURN> to continue..."
-fi
-
-if [ ${IP7:-0} != "0" ]; then
-echo "Desc: $DESCRIPTION7"
-echo "eth7: IP=$IP7/$NM7  BC=$BC"
-[ -s $IP6A7 ] || echo "eth7: IPv6=$IP6A7/$NM67"
-echo
-fi
-
-if [ ${IP8:-0} != "0" ]; then
-echo "Desc: $DESCRIPTION8"
-echo "eth8: IP=$IP8/$NM8  BC=$BC"
-[ -s $IP6A8 ] || echo "eth8: IPv6=$IP6A8/$NM68"
-echo
-fi
-
-if [ ${IP9:-0} != "0" ]; then
-echo "Desc: $DESCRIPTION9"
-echo "eth9: IP=$IP9/$NM9  BC=$BC"
-[ -s $IP6A9 ] || echo "eth9: IPv6=$IP6A9/$NM69"
-echo
-read -p "Press <RETURN> to continue..."
-fi
-
-if [ ${IP10:-0} != "0" ]; then
-echo "Desc: $DESCRIPTION10"
-echo "eth10: IP=$IP10/$NM10  BC=$BC"
-[ -s $IP6A10 ] || echo "eth10: IPv6=$IP6A10/$NM610"
-echo
-fi
-
-if [ ${IP11:-0} != "0" ]; then
-echo "Desc: $DESCRIPTION11"
-echo "eth11: IP=$IP11/$NM11  BC=$BC"
-[ -s $IP6A11 ] || echo "eth11: IPv6=$IP6A11/$NM611"
-echo
-fi
-
-if [ ${IP12:-0} != "0" ]; then
-echo "Desc: $DESCRIPTION12"
-echo "eth12: IP=$IP12/$NM12  BC=$BC"
-[ -s $IP6A12 ] || echo "eth12: IPv6=$IP6A12/$NM612"
-echo
-read -p "Press <RETURN> to continue..."
-fi
-
-if [ ${IP13:-0} != "0" ]; then
-echo "Desc: $DESCRIPTION13"
-echo "eth13: IP=$IP13/$NM13  BC=$BC"
-[ -s $IP6A13 ] || echo "eth13: IPv6=$IP6A13/$NM613"
-echo
-fi
-
-if [ ${IP14:-0} != "0" ]; then
-echo "Desc: $DESCRIPTION14"
-echo "eth14: IP=$IP14/$NM14  BC=$BC"
-[ -s $IP6A14 ] || echo "eth14: IPv6=$IP6A14/$NM614"
-echo
-fi
-
-if [ ${IP15:-0} != "0" ]; then
-echo "Desc: $DESCRIPTION15"
-echo "eth15: IP=$IP15/$NM15  BC=$BC"
-[ -s $IP6A15 ] || echo "eth15: IPv6=$IP6A15/$NM615"
-echo
-read -p "Press <RETURN> to continue..."
-fi
-
-
-
-if [ ${SSHLOGIN:-none} != "none" ]; then
-    echo "Allowing SSH from: $SSHLOGIN $SSHLOGIN2"
-fi
-
-if [ ${TELNET:-n} = "n" ]; then
-    echo "Telnet and ftp to the firewall disabled"
-else
-    echo "Allowing telnet and ftp to the firewall"
-fi
-
-cat<<EOF
-
-Press <RETURN> to continue...
-EOF
-read
-
-# Reconfigure ? - - - - - - - - - - - - - - - - - - - - - -
-cat<<EOF
-Are these settings correct ?
-
- y = exit the script
- n = run the script one more time
-
-EOF
-echo -n "([y]/n): "
-read
-if [ ${REPLY:-y} = "y" ]; then
-    LOOP=0
-fi
-
+    [ "$rc" = "Remount rootfs writable" ] && remount w && continue
+    
 done
-
-if [ ! -f /etc/.configured ]; then
-    touch /etc/.configured
-fi
-
-cat<<EOF
-
-Remember to reboot after making changes to the system,
-just to make sure it works properly...
-
-EOF
