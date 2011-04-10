@@ -4,6 +4,7 @@
 # Bifrost configuration utility
 # 
 
+export TERM=xterm
 export PATH=.:$PATH:/bin:/usr/sbin:/usr/bin:/sbin
 BACKTITLE="Bifrost configuration"
 
