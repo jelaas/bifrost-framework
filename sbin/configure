@@ -4,11 +4,11 @@
 # Bifrost configuration utility
 # 
 
-export PATH=.:$PATH
+export PATH=.:$PATH:/bin:/usr/sbin:/usr/bin:/sbin
 BACKTITLE="Bifrost configuration"
 
 if grep -qs bifrost /proc/mounts|grep -qs ro; then
-    dialog --backtitle "$BACKTITLE" --title Password --msgbox "The root filesystems is mounted read-only. No changes can be made to configuration!" 0 0
+    dialog --no-lines --backtitle "$BACKTITLE" --title Password --msgbox "The root filesystems is mounted read-only. No changes can be made to configuration!" 0 0
 fi
 
 #
@@ -18,9 +18,9 @@ fi
 if [ "$1" = password ]; then
     ETC=${ETC:-/etc}
 
-    dialog --backtitle "$BACKTITLE" --title Password --msgbox "You are STRONGLY encouraged to change the default passwords (hades12) for the user: root. If you already have done so, you may skip this step." 0 0
+    dialog --no-lines --backtitle "$BACKTITLE" --title Password --msgbox "You are STRONGLY encouraged to change the default passwords (hades12) for the user: root. If you already have done so, you may skip this step." 0 0
 
-    dialog --backtitle "$BACKTITLE" --title Password --yesno "Do you want to set the root password?" 0 0
+    dialog --no-lines --backtitle "$BACKTITLE" --title Password --yesno "Do you want to set the root password?" 0 0
     if [ $? = 0 ]; then
 	clear
 	if passwd root; then
@@ -43,7 +43,7 @@ if [ "$1" = hostname ]; then
     
     read hostname < $ETC/HOSTNAME
 
-    rc=$(dialog --backtitle "$BACKTITLE" --stdout --title Hostname --inputbox "The hostname must be set to the full DNS name. Ex: computer.domain.se. Enter hostname" 0 0 "$hostname") 
+    rc=$(dialog --no-lines --backtitle "$BACKTITLE" --stdout --title Hostname --inputbox "The hostname must be set to the full DNS name. Ex: computer.domain.se. Enter hostname" 0 0 "$hostname") 
     [ $? = 0 ] || exit 0
     echo $rc > $ETC/HOSTNAME
 
@@ -65,14 +65,14 @@ fi
 #
 
 function dnsserver {
-    rc=$(dialog --backtitle "$BACKTITLE" --stdout --inputbox "Enter dnsserver IP" 0 0 "$1") 
+    rc=$(dialog --no-lines --backtitle "$BACKTITLE" --stdout --inputbox "Enter dnsserver IP" 0 0 "$1") 
     [ $? = 0 ] || return 1
     echo $rc
     return 0
 }
 
 function idomain {
-    rc=$(dialog --backtitle "$BACKTITLE" --stdout --inputbox "Enter DNS domain" 0 0 "$1") 
+    rc=$(dialog --no-lines --backtitle "$BACKTITLE" --stdout --inputbox "Enter DNS domain" 0 0 "$1") 
     [ $? = 0 ] || return 1
     echo $rc
     return 0
@@ -97,7 +97,7 @@ if [ "$1" = dns ]; then
 	fi
     done
     while true; do
-	rc=$(dialog --backtitle "$BACKTITLE" --stdout --title "Configure DNS" --ok-label Select --cancel-label Back --menu  "Choose" 0 0 0 Domain $DOMAIN Server1 "${s[0]}" Server2 "${s[1]}" Server3 "${s[2]}" Save "")
+	rc=$(dialog --no-lines --backtitle "$BACKTITLE" --stdout --title "Configure DNS" --ok-label Select --cancel-label Back --menu  "Choose" 0 0 0 Domain $DOMAIN Server1 "${s[0]}" Server2 "${s[1]}" Server3 "${s[2]}" Save "")
 	if [ $? != 0 ]; then
 	    exit 0
 	fi
@@ -140,10 +140,8 @@ fi
 # Interfaces
 #
 
-Network Devices
-
 function getipaddr {
-    rc=$(dialog --backtitle "$BACKTITLE" --stdout --inputbox "$1" 0 0 "$2") 
+    rc=$(dialog --no-lines --backtitle "$BACKTITLE" --stdout --inputbox "$1" 0 0 "$2") 
     [ $? = 0 ] || return 1
     echo $rc
     return 0
@@ -176,7 +174,7 @@ function ifphys {
     [ "$CONFIG_LOG_MARTIANS" ] || CONFIG_LOG_MARTIANS=yes
 
     while true; do
-	rc=$(dialog --stdout --backtitle "$BACKTITLE" --title "Configure $ifname" --ok-label Select --cancel-label Cancel --default-item "$item" --menu  "Choose" 0 0 0 DHCP "$DHCP_CLIENT" IP4ADDR "$IP4ADDR" IP4PREFIX "$IP4MASK" IP6ADDR "$IP6ADDR" IP6PREFIX "$IP6MASK" no_spoof "$CONFIG_NO_SPOOF" no_source "$CONFIG_NO_SOURCE" proxy_arp "$CONFIG_PROXY_ARP" redirect "$CONFIG_REDIRECT" accept_redirect "$CONFIG_ACCEPT_REDIRECT" log_martians "$CONFIG_LOG_MARTIANS" description "$DESCRIPTION" Save  "")
+	rc=$(dialog --no-lines --stdout --backtitle "$BACKTITLE" --title "Configure $ifname" --ok-label Select --cancel-label Cancel --default-item "$item" --menu  "Choose" 0 0 0 DHCP "$DHCP_CLIENT" IP4ADDR "$IP4ADDR" IP4PREFIX "$IP4MASK" IP6ADDR "$IP6ADDR" IP6PREFIX "$IP6MASK" no_spoof "$CONFIG_NO_SPOOF" no_source "$CONFIG_NO_SOURCE" proxy_arp "$CONFIG_PROXY_ARP" redirect "$CONFIG_REDIRECT" accept_redirect "$CONFIG_ACCEPT_REDIRECT" log_martians "$CONFIG_LOG_MARTIANS" description "$DESCRIPTION" Save  "")
 	[ $? = 0 ] || return 0
 
 	item="$rc"
@@ -269,7 +267,7 @@ if [ "$1" = if ]; then
 	    echo \"$nic\" \"$(ifinfo -w -s - -i $nic driver)$(ifinfo -w -s Mbit- -i $nic speedmax)$(ifinfo -w -i $nic bus_info)\" >> $F
 	done
     
-	rc=$(dialog --stdout --backtitle "$BACKTITLE" --title "Configure interfaces" --ok-label Select --cancel-label Cancel --menu  "Choose interface" 0 0 0 --file $F)
+	rc=$(dialog --no-lines --stdout --backtitle "$BACKTITLE" --title "Configure interfaces" --ok-label Select --cancel-label Cancel --menu  "Choose interface" 0 0 0 --file $F)
 	
 	[ $? = 0 ] || exit 0
 	
@@ -286,7 +284,7 @@ if [ "$1" = gateway ]; then
     ETC=${ETC:-/etc}
     
     . $ETC/config.data/inet.routes &> /dev/null
-    GATEWAY=$(dialog --backtitle "$BACKTITLE" --stdout --title "Default gateway" --inputbox "Enter default gateway" 0 0 "$GATEWAY")
+    GATEWAY=$(dialog --no-lines --backtitle "$BACKTITLE" --stdout --title "Default gateway" --inputbox "Enter default gateway" 0 0 "$GATEWAY")
     [ $? = 0 ] || exit 0
     cat > $ETC/config.data/inet.routes <<EOF
 export GATEWAY=$GATEWAY
@@ -338,7 +336,7 @@ if [ "$1" = services ]; then
     [ "$sshd" = yes ] && sshd=on; [ "$sshd" = no ] && sshd=off
     [ "$swedishkeyboard" = yes ] && swedishkeyboard=on; [ "$swedishkeyboard" = no ] && swedishkeyboard=off
     
-    rc=$(dialog --backtitle "$BACKTITLE" --stdout --ok-label Apply --separate-output --default-item "$item" --title "Configure services" --checklist "Core services" 0 0 0 cron "Cron daemon" $cron dhcpd "DHCP daemon" $dhcpd rtcache "Disable route cache" $rtcache dnsmasq "Dnsmasq" $dnsmasq fsck "Extra fsck at boot" $fsck fw6rules "IPv6 firewall" $fw6rules fwrules "IPv4 firewall" $fwrules ifrename "Renaming of interfaces" $ifrename ifstat2 "Ifstat2 daemon for network statistics" $ifstat2 inetd "Inetd services" $inetd ipmi "Load ipmi modules for ipmitool" $ipmi ipv4forward "Enable IPv4 forwarding" $ipv4forward ipv6forward "Enable IPv6 forwarding" $ipv6forward ntp "NTP daemon" $ntp ramlog "Persistent ramlog" $ramlog sshd "SSH daemon" $sshd swedishkeyboard "Swedish keyboard" $swedishkeyboard)
+    rc=$(dialog --no-lines --backtitle "$BACKTITLE" --stdout --ok-label Apply --separate-output --default-item "$item" --title "Configure services" --checklist "Core services" 0 0 0 cron "Cron daemon" $cron dhcpd "DHCP daemon" $dhcpd rtcache "Disable route cache" $rtcache dnsmasq "Dnsmasq" $dnsmasq fsck "Extra fsck at boot" $fsck fw6rules "IPv6 firewall" $fw6rules fwrules "IPv4 firewall" $fwrules ifrename "Renaming of interfaces" $ifrename ifstat2 "Ifstat2 daemon for network statistics" $ifstat2 inetd "Inetd services" $inetd ipmi "Load ipmi modules for ipmitool" $ipmi ipv4forward "Enable IPv4 forwarding" $ipv4forward ipv6forward "Enable IPv6 forwarding" $ipv6forward ntp "NTP daemon" $ntp ramlog "Persistent ramlog" $ramlog sshd "SSH daemon" $sshd swedishkeyboard "Swedish keyboard" $swedishkeyboard)
     [ $? = 0 ] || exit 0
     
     item=$rc
@@ -371,10 +369,10 @@ fi
 if [ "$1" = syslog ]; then
     ETC=${ETC:-/etc}
 
-    dialog --backtitle "$BACKTITLE" --title "Syslog server" --yesno "Do you want to log to a syslog server?" 0 0
+    dialog --no-lines --backtitle "$BACKTITLE" --title "Syslog server" --yesno "Do you want to log to a syslog server?" 0 0
     if [ $? = 0 ]; then
 	SS="$(cat $ETC/syslog.conf|tr -s ' '|cut -d ' ' -f 2|cut -d '@' -f 2)"
-	SS=$(dialog --backtitle "$BACKTITLE" --stdout --title "Syslog server" --inputbox "Enter syslog server" 0 0 "$SS")
+	SS=$(dialog --no-lines --backtitle "$BACKTITLE" --stdout --title "Syslog server" --inputbox "Enter syslog server" 0 0 "$SS")
 	[ $? = 0 ] || exit 0
 	cat > $ETC/syslog.conf <<EOF
 *.*   -@$SS
@@ -398,7 +396,7 @@ fi
 item="root password"
 
 while true; do
-    rc=$(dialog --backtitle "$BACKTITLE" --stdout --default-item "$item" --title "Main menu" --ok-label Select --cancel-label Cancel --menu "Choose section" 0 0 0 "Root password" "" "Hostname" "" DNS "" "Network devices" "" Gateway "" Services "" Syslog "" "Remount rootfs writable" "")
+    rc=$(dialog --no-lines --backtitle "$BACKTITLE" --stdout --default-item "$item" --title "Main menu" --ok-label Select --cancel-label Cancel --menu "Choose section" 0 0 0 "Root password" "" "Hostname" "" DNS "" "Network devices" "" Gateway "" Services "" Syslog "" "Remount rootfs writable" "")
 
     [ $? = 0 ] || exit 0
     
