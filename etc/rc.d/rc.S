@@ -64,7 +64,7 @@ echo "Remounting root device with read-write enabled."
 [ $(allcaps) = yes ] && mount -n -w -o remount /
 
 # Install default versions if needed:
-for f in hosts passwd shadow group fstab hosts.allow syslog.conf resolv.conf ntp.conf TZ; do
+for f in hosts passwd shadow group fstab hosts.allow syslog.conf resolv.conf ntp.conf TZ dhcpcd.conf; do
     [ -f /etc/$f ] || cp -p /etc/config.preconf/$f.default /etc/$f
 done
 for f in PANIC; do
@@ -123,7 +123,7 @@ grep -q /var /etc/fstab && mount /var
 
 # Create directories as needed
 echo "Adding files and directories to /var (usually /var -> /tmp)"
-for d in adm spool spool/cron spool/locks tmp log run empty; do
+for d in adm spool spool/cron spool/locks tmp log run empty db; do
     [ -d /var/$d ] || mkdir -p /var/$d
 done
 
