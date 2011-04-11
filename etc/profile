@@ -5,11 +5,14 @@ PATH="/bin:/sbin:/usr/bin:/usr/sbin:/etc:."
 
 APATH=/bin32
 if [ `uname -m` = x86_64 ]; then
- APATH=/bin64
+   APATH=/bin64
 fi
+PATH=$APATH:$PATH
 
 # Adding possible paths for opt-packages
-PATH=$APATH:$PATH:/opt/emacs/bin:/opt/nomad/bin:/opt/sniff/bin:/opt/snmp/bin:/opt/snmp/sbin:/opt/www/apache/bin:/opt/zebra/bin:/opt/zebra/sbin
+for opt in /opt/*/bin; do
+    [ -d "$opt" ] && PATH=$PATH:$opt
+done
 
 if [ "$TERM" = "" -o "$TERM" = "unknown" ]; then
    TERM=linux
