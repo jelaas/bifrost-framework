@@ -16,8 +16,6 @@ done
 
 if [ "$TERM" = "" -o "$TERM" = "unknown" ]; then
    TERM=linux
-else
-   TERM=xterm
 fi
 
 HISTFILE=
