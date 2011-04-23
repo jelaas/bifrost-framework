@@ -1,1 +1,1 @@
-README-bifrost-6.1
+README-bifrost-7.0
