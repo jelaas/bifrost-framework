@@ -1,7 +1,7 @@
 New since 6.x series.
 
 The Bifrost core distribution is now built completely from a the bifrost-build system.
-This means everything in the system is completely tracked. Sources, versions, build instructions and dependencies. https://github.com/jelaas/bifrost-build
+This means everything in the system is completely tracked. Sources, versions, build instructions and dependencies. See "https://github.com/jelaas/bifrost-build".
 
 A new configure script based on dialog is now included. Makes basic system configuration a bit more fancier.
 
