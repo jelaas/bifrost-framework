@@ -14,7 +14,14 @@ Patches are:
 - e1000 and e1000e copybreak patch
 - backported bugfixes for fib_trie and ipv4/raw.c
 
-Initramfs is used at boot time to find the boot partition by label, run fsck and then mount the boot partition.
+Kernel modules are sorted into a few different packages: supported, unsupported, firmware, vmlinux and wireless.
+"Supported" is the core package with kernel and the supported driver modules.
+"Firmware" is for all firmware.
+"Wireless" is for wireless device drivers.
+"Vmlinux" is for the uncompressed kernel and system map.
+"Unsupported" is for everything else not in the above categories..
+
+Initramfs is used at boot time to find the boot partition by label, run fsck and then mount the boot partition. The initramfs is a cpio archive included in the kernel image.
 
 ipmi support included (ipmitool).
 
