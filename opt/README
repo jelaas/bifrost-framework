@@ -11,37 +11,18 @@ or the Bifrost Nomad web server and Nomad itself:
 
 With subdirectories like:
 
-/opt/package/bin
-/opt/package/sbin
-/opt/package/lib
-/opt/package/rc.d
+/opt/<package>/bin
+/opt/<package>/sbin
+/opt/<package>/lib
+/opt/<package>/rc.d
 
-If your adding packages, make sure to add the bin path to
-/etc/profile:
 
-  # Adding possible paths for opt-packages
-  PATH=$PATH:/opt/emacs/bin:/opt/nomad/bin:/opt/sniff/bin:
-  /opt/snmp/bin:/opt/snmp/sbin:/opt/www/apache/bin:/opt/zebra/bin
-
-and add it to /etc/rc.d/rc.M and perhaps create a yes/no-flag for
-it under /etc/config.flags, such as:
-
-  # Start the Argus logger
-  export CONFIG_ARGUS=`cat /etc/config.flags/argus`
-  if [ $CONFIG_ARGUS = "yes" ]; then
-      if [ -f /opt/sniff/rc.d/rc.argus ]; then
-	  PATH=$PATH:/opt/sniff/bin
-	  /opt/sniff/rc.d/rc.argus
-      fi
-  fi
-
-If your using extra shared libraries under an /opt/package/lib
-directory, add the directory to the /etc/ld.so.conf file and
-make sure to run ldconfig with the disk i writeable mode.
-Ldconfig runs at every boot, but to start using the new package
-without a reboot, ldconfig will be a necessary step.
+Files:
+/opt/<package>/rc.d/rc.<package>
+/opt/<package>/etc/config.flags/<package>
 
 Temporary files and pid/lock files, will still have to go in the
 /var/run or /tmp directory, unless you're using a separate writeable
 disk for logging etc.
 
+For more information see /Documentation/Bifrost/Packages.txt
