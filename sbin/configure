@@ -251,7 +251,7 @@ export CONFIG_ACCEPT_REDIRECT=$CONFIG_ACCEPT_REDIRECT
 export CONFIG_LOG_MARTIANS=$CONFIG_LOG_MARTIANS
 export DESCRIPTION="$DESCRIPTION"
 EOF
-            echo "yes" >> $ETC/config.flags/${ifname}.nic
+            echo "yes" > $ETC/config.flags/${ifname}.nic
 	fi
     done
     exit 0
