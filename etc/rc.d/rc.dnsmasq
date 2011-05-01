@@ -5,7 +5,7 @@ function killproc {
 }
 
 # Start the dnsmasq server
-[ "$1" = start ] && [ -f /usr/sbin/dnsmasq ] && taskset -c 0 /usr/sbin/dnsmasq && exit 0
-[ "$1" = stop ] && [ -f /usr/sbin/dnsmasq ] && killproc dnsmasq && exit 0
+[ "$1" = start ] && [ -f /sbin/dnsmasq ] && taskset -c 0 /sbin/dnsmasq && exit 0
+[ "$1" = stop ] && [ -f /sbin/dnsmasq ] && killproc dnsmasq && exit 0
 
 exit 1
