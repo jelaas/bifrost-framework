@@ -388,6 +388,14 @@ EOF
     exit 0
 fi
 
+if [ "$1" = syslog ]; then
+    ETC=${ETC:-/etc}
+    
+    bifrost-upgrade
+    
+    exit 0
+fi
+
 if [ "$1" ]; then
     echo "The option \'$1\' is not supported!"
     echo
@@ -397,7 +405,7 @@ fi
 item="root password"
 
 while true; do
-    rc=$(dialog --no-lines --backtitle "$BACKTITLE" --stdout --default-item "$item" --title "Main menu" --ok-label Select --cancel-label Cancel --menu "Choose section" 0 0 0 "Root password" "" "Hostname" "" DNS "" "Network devices" "" Gateway "" Services "" Syslog "" "Remount rootfs writable" "")
+    rc=$(dialog --no-lines --backtitle "$BACKTITLE" --stdout --default-item "$item" --title "Main menu" --ok-label Select --cancel-label Cancel --menu "Choose section" 0 0 0 "Root password" "" "Hostname" "" DNS "" "Network devices" "" Gateway "" Services "" Syslog "" "Bifrost upgrade" "" "Remount rootfs writable" "")
 
     [ $? = 0 ] || exit 0
     
@@ -408,6 +416,7 @@ while true; do
     [ "$rc" = "Gateway" ] && item="Services" && configure gateway && continue
     [ "$rc" = "Services" ] && item="Syslog" && configure services && continue
     [ "$rc" = "Syslog" ] && item="root password" && configure syslog && continue
+    [ "$rc" = "Bifrost upgrade" ] && item="Bifrost upgrade" && configure upgrade && continue
 
     [ "$rc" = "Remount rootfs writable" ] && remount w && continue
     
