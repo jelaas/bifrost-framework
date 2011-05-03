@@ -8,7 +8,7 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin
 */5 * * * * /usr/sbin/daemoncheck
 #
 # Sync the hardware clock
-55 23 * * * /bin/hwclock --utc --systohc --noadjfile
+55 23 * * * /sbin/hwclock --utc --systohc --noadjfile
 # Shift the Argus log
 #59 23 * * * /opt/sniff/bin/newarguslog
 #
