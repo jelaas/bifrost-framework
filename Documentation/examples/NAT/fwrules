@@ -1,0 +1,11 @@
+# Upstream interface eth0
+
+modprobe sch_sfq
+tc qdisc del dev eth0 root
+tc qdisc add dev eth0 root handle 1: sfq perturb 10
+tc filter add dev eth0 protocol all parent 1: handle 2 flow hash keys dst,proto divisor 256 perturb 10
+iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+
+# Downstream interface eth1
+iptables -A FORWARD -i eth0 -o eth1 -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i eth1 -o eth0 -j ACCEPT

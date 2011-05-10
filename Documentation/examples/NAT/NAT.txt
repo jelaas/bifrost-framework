@@ -1,0 +1,9 @@
+This example NATs 10.0.0.0/24 on eth1 to upstream eth0.
+
+Do not forget set /etc/config.flags/ipv4-forward to 'yes'.
+Configure interfaces eth0 and eth1.
+
+Read and understand dnsmasq.conf and fwrules.
+
+Copy dnsmasq.conf to /etc.
+Copy fwrules to /filter.
