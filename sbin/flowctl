@@ -2,6 +2,6 @@
 op=off
 [ "$1" = on ] && op=on
 
-for d in $(/sbin/ifinfo); do
-    ethtool -A $d rx $op tx $op &> /dev/null
+for d in $(/usr/bin/ifinfo); do
+    ethtool -A $d autoneg $op rx $op tx $op &> /dev/null
 done
