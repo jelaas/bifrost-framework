@@ -388,7 +388,7 @@ EOF
     exit 0
 fi
 
-if [ "$1" = syslog ]; then
+if [ "$1" = upgrade ]; then
     ETC=${ETC:-/etc}
     
     bifrost-upgrade
