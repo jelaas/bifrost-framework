@@ -48,6 +48,9 @@ if [ $(allcaps) = yes ]; then
 	fi
 	[ "$d" = NONE ] || modprobe $d
     done
+    
+    # Turn off flow control on all interfaces
+    flowctl off
 fi
 
 # - - - - - - - - - - - - - - - - - - - - - -
