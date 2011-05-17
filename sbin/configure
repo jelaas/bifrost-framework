@@ -238,6 +238,7 @@ function ifphys {
 
 	if [ "$rc" = Save ]; then
 	    cat > $ETC/config.data/${ifname}.nic <<EOF
+export DHCP_CLIENT=$DHCP_CLIENT
 export IP4ADDR=$IP4ADDR
 export IP4MASK=$IP4MASK
 export IP6ADDR=$IP6ADDR
