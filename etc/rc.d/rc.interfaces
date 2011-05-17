@@ -208,7 +208,6 @@ down)
 show)
     show ;;
 *)
-
-   uasge ;;
+   usage ;;
 
 esac
