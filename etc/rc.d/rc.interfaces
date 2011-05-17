@@ -49,6 +49,11 @@ down()
     echo "Taking down $DEV.."
     echo "($DESCRIPTION)"
 
+    if [ ${DHCP_CLIENT:-no} = "yes" ]; then
+	read DHCPPID < /var/run/dhcpcd-$IF.pid
+	kill $DHCPPID
+    fi
+    
     if [ ${LABEL:-none} != "none" ]; then
 	ip a del $IP4ADDR/$IP4MASK broadcast $BROADCAST dev $IF label $IF:$LABEL
     else
