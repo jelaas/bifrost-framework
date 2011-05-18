@@ -12,7 +12,8 @@ Patches are:
 - DOM support for ixgbe and igb (use ethtool to access)
 - pktgen receiver patch (better statistics from pktgen)
 - e1000 and e1000e copybreak patch
-- backported bugfixes for fib_trie and ipv4/raw.c
+- slub_nomerge enabled by default
+- backported bugfixes for fib_trie, ipv4/raw.c and tcp_output.c.
 
 Kernel modules are sorted into a few different packages: supported, unsupported, firmware, vmlinux and wireless.
 "Supported" is the core package with kernel and the supported driver modules.
@@ -39,3 +40,4 @@ cpu_pkts: monitor received packet distribution over cpus.
 
 bifrost-upgrade: script to ease upgrading from a previous version of bifrost.
 
+rfcmd: (for talking to tellsticks I believe)
