@@ -50,8 +50,7 @@ down()
     echo "($DESCRIPTION)"
 
     if [ ${DHCP_CLIENT:-no} = "yes" ]; then
-	read DHCPPID < /var/run/dhcpcd-$IF.pid
-	kill $DHCPPID
+	/sbin/dhcpcd -k $IF
     fi
     
     if [ ${LABEL:-none} != "none" ]; then
