@@ -94,7 +94,8 @@ up()
     fi
 
     if [ ${DHCP_CLIENT:-no} = "yes" ]; then
-	/sbin/dhcpcd -b -t 0 $IF
+        ip link set $IF up
+	/sbin/dhcpcd -b -K -t 0 $IF
     fi
 
 # Set parameters in proc file system
