@@ -4,9 +4,7 @@
 #
 # Description: Adding default and special routes (static)
 
-. /etc/config.data/eth0.nic
-. /etc/config.data/inet.routes
-
-ip r add default via $GATEWAY proto static
-
-
+if [ -f /etc/config.data/inet.routes] ; then
+    . /etc/config.data/inet.routes
+    [ "$GATEWAY" ] && ip r add default via $GATEWAY proto static
+fi
