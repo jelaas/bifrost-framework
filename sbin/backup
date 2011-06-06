@@ -7,8 +7,14 @@
 # You may want to change the location of the backup file
 # to make it more secure and perhaps the file name itself.
 
-BACKUP_USER=root
-BACKUP_HOST=host.domain.se
+if [ ! -f /etc/config.data/backup.conf ]; then
+    echo "You need to configure '/etc/config.data/backup.conf'"
+    echo "Example contents:"
+    echo " BACKUP_USER=root"
+    echo " BACKUP_HOST=host.domain.se"
+    exit 1
+fi
+. /etc/config.data/backup.conf
 
 echo
 echo "Backing up everything through an ssh tunnel."
@@ -17,12 +23,19 @@ echo "the shell prompt to come back (the compression"
 echo "takes time, which depends on the remote host)."
 echo
 
-remount r
+read FLAG < /etc/config.flags/rwsystem
+[ "$FLAG" != yes ] && remount r
+
+cd /
 umount -n /mnt 2> /dev/null
-mount -nr LABEL=bifrost /mnt 2> /dev/null
-cd /mnt
+
+(mount -nr LABEL=bifrost /mnt||mount -n LABEL=bifrost /mnt||mount -t ext4 -nr LABEL=bifrost /mnt||mount -t ext4 -n LABEL=bifrost /mnt ) 2> /dev/null
+
+[ $? = 0 ] || exit 1
+
+cd /mnt || exit 1
 
 tar cpf - . | ssh $BACKUP_USER@$BACKUP_HOST 'umask 077;rm -f /tmp/bifrost.tar*;dd of=/tmp/bifrost.tar;gzip -9 /tmp/bifrost.tar'
 
-cd -
+cd /
 umount -n /mnt 2> /dev/null
