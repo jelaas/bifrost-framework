@@ -12,15 +12,24 @@ if [ ! -f /etc/config.data/backup.conf ]; then
     echo "Example contents:"
     echo " BACKUP_USER=root"
     echo " BACKUP_HOST=host.domain.se"
+    echo " BACKUP_FILENAME=/tmp/bifrost"
+    echo " BACKUP_ADD_DATE=yes"
     exit 1
 fi
 . /etc/config.data/backup.conf
 
+[ "$BACKUP_FILENAME" ] || BACKUP_FILENAME="/tmp/bifrost"
+
+DATE=""
+[ "$BACKUP_ADD_DATE" = yes ] && DATE="-$(date +%Y-%m-%d)"
+
+FILENAME="${BACKUP_FILENAME}$DATE.tar.gz"
+
 echo
 echo "Backing up everything through an ssh tunnel."
 echo "After entering the password, please wait for"
-echo "the shell prompt to come back (the compression"
-echo "takes time, which depends on the remote host)."
+echo "the shell prompt to come back."
+echo "The destination file is '$FILENAME'."
 echo
 
 read FLAG < /etc/config.flags/rwsystem
@@ -35,7 +44,7 @@ umount -n /mnt 2> /dev/null
 
 cd /mnt || exit 1
 
-tar cpf - . | ssh $BACKUP_USER@$BACKUP_HOST 'umask 077;rm -f /tmp/bifrost.tar*;dd of=/tmp/bifrost.tar;gzip -9 /tmp/bifrost.tar'
+tar czpf - . | ssh $BACKUP_USER@$BACKUP_HOST "umask 077;cat - > $FILENAME"
 
 cd /
 umount -n /mnt 2> /dev/null
