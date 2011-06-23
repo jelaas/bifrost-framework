@@ -1,0 +1,53 @@
+#!/bin/bash
+
+if [ ! -f /etc/opt/sources.list ]; then
+   echo "'/etc/opt/sources.list' is missing!"
+   exit 1
+fi
+
+function fetchlist {
+	 while read REPO; do
+	       wget -q --no-check-certificate "$REPO" -O-|sed 's/href="/\nhref="/'|grep ^href|cut -d \" -f 2|grep '^opt.*tar.gz'|xargs -n 1 echo "$REPO"|tr ' ' '/'
+	 done
+}
+
+if [ -z "$1" ]; then
+    echo "opt-get list|fetch|install [name]"
+    exit 0
+fi
+
+# opt-get list
+if [ "$1" = list ]; then
+   vers -p -l $(cat /etc/opt/sources.list|fetchlist)
+   exit 0
+fi
+
+# opt-get install <pkg>
+if [ "$1" = install ]; then
+   pkg=$(vers -p -l $(cat /etc/opt/sources.list|fetchlist)|grep "/$2"|head -n 1)
+   [ "$pkg" ] || exit 1
+   echo "install $pkg ? y/n"
+   read ANS
+   [ "$ANS" != y ] && exit 1
+   remount w
+   cd /
+   if wget --no-check-certificate "$pkg" -O /tmp/p$$.tar.gz; then
+       tar xf /tmp/p$$.tar.gz
+       rm -f /tmp/p$$.tar.gz
+   fi
+   remount r
+   exit 0
+fi
+
+# opt-get fetch <pkg>
+if [ "$1" = fetch ]; then
+   pkg=$(vers -p -l $(cat /etc/opt/sources.list|fetchlist)|grep "/$2"|head -n 1)
+   [ "$pkg" ] || exit 1
+   echo "fetch $pkg ? y/n"
+   read ANS
+   [ "$ANS" != y ] && exit 1
+   cd /tmp
+   wget --no-check-certificate "$pkg"
+   exit 0
+fi
+
