@@ -46,6 +46,11 @@ Directories and Files:
 		  can be edited by hand using 'vi' or 'edit'.
 		  Read the /etc/config.data/.README file for further info.
 
+/etc/config.preconf
+		  Contains default configurations. These will be
+		  installed if needed. They will never overwrite an
+		  existing configuration file.
+
 /etc/rc.d	  All the rc scripts are located here. They are mostly
 		  data driven by the config and options files, but can
 		  be edited by hand if needed. Read the /etc/rc.d/README
@@ -61,3 +66,5 @@ Directories and Files:
 		  be installed here (binaries, configuration files and
 		  dedicated libraries if possible).
 
+/Documentation
+		  Documentation...
