@@ -96,8 +96,10 @@ mkdir -p /tmp /sys
 chgrp tmp /tmp
 chmod 1777 /tmp
 
-# Remove /etc/mtab* so that mount will create it with a root entry
-rm -f /etc/mtab*
+# Bind mount /proc/1/mounts /etc/mtab
+# This works better than link
+[ -f /etc/mtab ] || touch /etc/mtab
+mount -n --bind /proc/1/mounts /etc/mtab
 
 # Create pseudo file systems
 export TMPSIZE=`cat /etc/config.data/tmpsize`
