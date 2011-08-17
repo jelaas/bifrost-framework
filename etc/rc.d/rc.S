@@ -76,7 +76,7 @@ done
 for f in cron ifstat2 sshd swedish-keyboard ipv4-forward ipv6-forward fw6rules fwrules ignore-icmp-bc ipmi short-defrag-time disable-route-cache; do
     [ -f /etc/config.flags/$f ] || echo yes > /etc/config.flags/$f
 done
-for f in rwsystem fsck dhcpd inetd ntp dnsmasq ramlog slow-keyboard ifrename conntrack local-port-range eth0.nic dummy0.nic; do
+for f in usb-suspend rwsystem fsck dhcpd inetd ntp dnsmasq ramlog slow-keyboard ifrename conntrack local-port-range eth0.nic dummy0.nic; do
     [ -f /etc/config.flags/$f ] || echo no > /etc/config.flags/$f
 done
 [ -f /etc/config.data/tmpsize ] || echo 256m > /etc/config.data/tmpsize
@@ -141,6 +141,15 @@ mount -avt nonfs
 export RAM_LOG=`cat /etc/config.flags/ramlog`
 if [ $RAM_LOG = "yes" ]; then
         cp -rp /usr/log.persistent/* /var/log/
+fi
+
+# Configure USB suspend
+# This can be dangerous: some devices never wake up from suspend!
+read FLAG < /etc/config.flags/usb-suspend
+if [ "$FLAG" != yes ]; then
+    if [ -f /sys/module/usbcore/parameters/autosuspend -a $(allcaps) = yes ]; then
+	echo -1 > /sys/module/usbcore/parameters/autosuspend
+    fi
 fi
 
 umask 077
