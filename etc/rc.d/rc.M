@@ -60,9 +60,9 @@ if [ -f /etc/rc.d/rc.inet ]; then
 fi
 
 # Sleep 4 seconds and then remount the flash disk read-only
-sleep 4
 read FLAG < /etc/config.flags/rwsystem
 if [ "$FLAG" != yes ]; then
+    sleep 4
     [ $(allcaps) = yes ] && remount r
 fi
 
