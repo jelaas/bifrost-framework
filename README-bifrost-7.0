@@ -7,7 +7,7 @@ A new configure script based on dialog is now included. Makes basic system confi
 
 'devtag': Device tagging to keep track of devices. Currently only supports USB-devices. 
 
-The included kernels (32 and 64 bit) are based on 2.6.38-rc8 from net-next.
+The included kernels (32 and 64 bit) are based on 3.0.0 from net-next.
 Patches are:
 - ixgbe RSS patch (free CPU 0 from bulk traffic)
 - igxbe sfp patch (allow any sfp, not just intels)
