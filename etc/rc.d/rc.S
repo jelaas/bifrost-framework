@@ -98,6 +98,7 @@ chmod 1777 /tmp
 
 # Bind mount /proc/1/mounts /etc/mtab
 # This works better than link
+[ -L /etc/mtab ] && rm -f /etc/mtab
 [ -f /etc/mtab ] || touch /etc/mtab
 mount -n --bind /proc/1/mounts /etc/mtab
 

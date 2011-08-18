@@ -59,7 +59,6 @@ ln -snf /var/log  $dst/usr/log
 
 ln -sf /tmp/initrunlvl             $dst/etc/initrunlvl
 ln -sf /usr/lib/zoneinfo/localtime $dst/etc/localtime
-ln -sf /proc/mounts                $dst/etc/mtab
 ln -sf rc.0                        $dst/etc/rc.d/rc.6
 ln -sf /sbin/e2fsck                $dst/etc/fs/fsck.ext2
 
