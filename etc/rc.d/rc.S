@@ -104,8 +104,8 @@ mount -n --bind /proc/1/mounts /etc/mtab
 
 # Create pseudo file systems
 export TMPSIZE=`cat /etc/config.data/tmpsize`
-mount -t tmpfs -o size=$TMPSIZE tmpfs /tmp
-mount /sys
+mount -n -t tmpfs -o size=$TMPSIZE tmpfs /tmp
+mount -n /sys
 
 # Detect hardware and modprobe appropriate kernel modules
 # module may be disable in /etc/config.flags/MODULENAME.mod
@@ -122,7 +122,7 @@ if [ $(allcaps) = yes ]; then
 fi
 
 # if /var is _not_ the default ram disk, we need to mount it now
-grep -q /var /etc/fstab && mount /var
+grep -q /var /etc/fstab && mount -n /var
 
 # if /var is on kept between runs, we need to clean up old pids
 [ -d /var/run ] && rm -f /var/run/*.pid
@@ -136,7 +136,7 @@ done
 # Mount file systems in fstab (and create an entry for /)
 # but not NFS.
 echo "Mounting any additional filesystems"
-mount -avt nonfs
+mount -n -avt nonfs
 
 #Setup RAM logging
 export RAM_LOG=`cat /etc/config.flags/ramlog`
