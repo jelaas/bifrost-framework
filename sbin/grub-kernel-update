@@ -9,6 +9,10 @@ if [ -f /etc/config.preconf/menu.lst.default ]; then
     cp /etc/config.preconf/menu.lst.default $F
 else
     cat <<EOF >$F
+# Grub on the serial port
+#serial --unit=0 --speed=9600 --word=8 --parity=no --stop=1
+#terminal serial
+
 # defaults to the first menu entry
 default 0
 
@@ -25,11 +29,16 @@ color  black/light-gray white/red
 
 title   kernel.default-x86_32
 root    (hd0,0)
-kernel  /boot/kernel.default-x86_32 root=/dev/sda1 rootdelay=10
+kernel  /boot/kernel.default-x86_32 rootdelay=10
 
 title   kernel.default-x86_64
 root    (hd0,0)
-kernel  /boot/kernel.default-x86_64 root=/dev/sda1 rootdelay=10
+kernel  /boot/kernel.default-x86_64 rootdelay=10
+#kernel  /boot/kernel.default-x86_64 root=/dev/sda1 usbreset rootdelay=10
+
+title   kernel.default-x86_32-SERIALPORT
+root    (hd0,0)
+kernel  /boot/kernel.default-x86_32 rootdelay=10 console=ttyS0,9600n8 clocksource=tsc
 
 title  memtest
 kernel /boot/memtest.bin
