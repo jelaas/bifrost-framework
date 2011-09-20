@@ -1,0 +1,74 @@
+3G connectivity in bifrost
+--------------------------
+Written by Hannes Antero Junnila.
+
+1. Introduction
+
+This documents describes what prerequisites are needed and how to run a 3G internet connection. This tutorial is based on a Huawei E1550 modem using a Comviq sim-card.
+
+2. Requirements
+
+Recent linux kernel built with at least the following options/modules:
+
+option (CONFIG_USB_SERIAL_OPTION)
+usbserial (CONFIG_USB_SERIAL)
+ppp_generic (CONFIG_PPP)
+
+The following software:
+
+pppd (available from bifrost package repository)
+
+usb_modeswitch
+
+3. Setup
+
+Run the following commands
+
+mkdir /var/lock   <- This sould be added to init-scripts
+
+modprobe ppp_generic  <-  This sould be added to device-detect
+
+usb_modeswitch -v 0x12d1 -p 0x1446 -V 0x12d1 -P 0x1001 -M "55534243000000000000000000000011060000000000000000000000000000"
+
+(If necessary change the values to correspond to the usb manufacturer, product (-v and -p are the ones lsusb show, -V and -P are the ones option expects). -M is the magic command for the Huawei modems to change from CDROM-mode to Serial-mode) 
+
+pppd call tele2
+
+TIP: If everything doesnt work out, you can add the following in /etc/syslog.conf and run kill -HUP `cat /var/run/syslogd.pid`. After that you can see the communication on the serial line in /var/log/ppp
+
+ppp.* -/var/log/ppp
+
+
+
+A. Scripts
+
+/etc/chatscripts/tele2:
+
+ABORT BUSY
+ABORT VOICE
+ABORT "+CGATT: 0"
+
+ECHO ON
+
+TIMEOUT 30
+
+"" ATZ
+OK 'ATQ0 V1 E1 X3 S0=0 &C1 &D2 +FCLASS=0'
+OK 'AT+CGDCONT=1,"IP","data.comviq.se"'
+OK ATD*99***1#
+CONNECT ""
+
+/etc/ppp/peers/tele2:
+
+noauth
+connect "/sbin/chat -v -f /etc/chatscripts/tele2"
+debug
+/dev/ttyUSB0
+9600
+defaultroute
+noipdefault
+remotename tele2
+ipparam tele2
+usepeerdns
+
+
