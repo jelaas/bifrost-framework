@@ -122,7 +122,13 @@ if [ $(allcaps) = yes ]; then
 fi
 
 # if /var is _not_ the default ram disk, we need to mount it now
-grep -q /var /etc/fstab && mount -n /var
+if grep -q /var /etc/fstab; then
+    [ -L /var ] && rm -f /var
+    mkdir -p /var
+    mount -n /var || mount -n --bind /tmp /var
+else
+    mount -n --bind /tmp /var
+fi
 
 # if /var is on kept between runs, we need to clean up old pids
 [ -d /var/run ] && rm -f /var/run/*.pid

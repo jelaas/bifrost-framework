@@ -46,7 +46,7 @@ for d in bin bin32 bin64 contrib dev dev/pts dev/bus dev/bus/usb dev.real dev.re
     mkdir -p $dst/$d
 done
 
-ln -sf tmp $dst/var
+mkdir $dst/var
 ln -sf /tmp/know_hosts_root  $dst/.ssh/know_hosts
 ln -sf /tmp/know_hosts2_root $dst/.ssh/know_hosts2
 
