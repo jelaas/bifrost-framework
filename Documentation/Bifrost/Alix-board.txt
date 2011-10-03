@@ -1,0 +1,22 @@
+Some configs to get the Alix board up and running:
+
+Bifrost:/# cat /boot/grub/menu.lst
+serial --unit=0 --speed=9600 --word=8 --parity=no --stop=1
+terminal serial
+
+# defaults to the first menu entry
+default 0
+timeout 5
+
+title   kernel.default-x86_32
+root    (hd0,0)
+kernel  /boot/kernel.default-x86_32 root=/dev/hda1 rootdelay=10 console=ttyS0,9600n8 clocksource=tsc
+
+Bifrost:/# tail -1 /etc/eth-detect.d/50_100_Megabit.conf
+:Rhine:via-rhine:Via-Rhine etc
+
+Bifrost:/# tail -1 /etc/eth-detect.d/75_Wireless.conf
+: Atheros.*AR:ath5k:Atheros Wireless
+
+Edit /etc/inittab to include the console.
+
