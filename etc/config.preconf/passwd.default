@@ -11,3 +11,4 @@ news:x:9:13:news:/var:
 operator:x:11:0:operator:/:/bin/bash
 www:x:201:201:Web User:/:/bin/bash
 sshd:x:204:204:SSH:/var/empty:/bin/false
+nobody:x:65534:65534:nobody:/var:/bin/false
