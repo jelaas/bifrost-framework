@@ -20,3 +20,4 @@ www::201:
 tmp::202:www
 sshd::204:sshd
 nogroup::-1:
+nobody::65534:
