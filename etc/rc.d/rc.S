@@ -135,7 +135,7 @@ fi
 
 # Create directories as needed
 echo "Adding files and directories to /var (usually /var -> /tmp)"
-for d in adm spool spool/cron spool/locks tmp log lock run empty db; do
+for d in adm spool spool/cron spool/locks tmp log lock run empty db lib/misc; do
     [ -d /var/$d ] || mkdir -p /var/$d
 done
 
