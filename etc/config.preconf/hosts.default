@@ -1,7 +1,6 @@
 127.0.0.1  localhost
 
-# Bifrost Nomad web server IP
-10.1.1.1   nomad
+10.0.0.2   Bifrost
 
 # Default NTP servers
 192.36.143.150 Time1.Stupi.SE
