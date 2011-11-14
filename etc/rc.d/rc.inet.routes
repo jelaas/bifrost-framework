@@ -4,7 +4,7 @@
 #
 # Description: Adding default and special routes (static)
 
-if [ -f /etc/config.data/inet.routes] ; then
+if [ -f /etc/config.data/inet.routes ] ; then
     . /etc/config.data/inet.routes
     [ "$GATEWAY" ] && ip r add default via $GATEWAY proto static
 fi
