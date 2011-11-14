@@ -22,7 +22,7 @@ if [ "$1" = start ]; then
 EOF
 
 # Delay to let internet routing get stable
-    sleep 60
+    sleep 2
 
     if [ -f /usr/bin/ntpd ]; then
 	/usr/bin/ntpdate $NTPSERVER
