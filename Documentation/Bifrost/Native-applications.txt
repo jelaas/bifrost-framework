@@ -1,0 +1,274 @@
+allcaps
+-------
+Reports if current process has all capabilities.
+This is an easy way to figure out if we are inside a container or not.
+Inside a virtualization container capabilities are limited, atleast the capability to reboot
+ or shutdown the system is absent.
+
+bifrost-upgrade
+---------------
+Can be run after an upgrade of Bifrost. To upgrade you just untar the newer Bifrost distribution
+tarball over root '/'.
+bifrost-upgrade will make sure there are no duplicates of the binaries installed.
+
+cpuinfo
+-------
+Information about the system CPUs.
+Script-friendly.
+
+cpuinfo [-aw] [-ps] [-n CPU] [key]
+version 1.1
+ -a --all         Output all keys found.
+ -n --cpu         Output info for this cpu only.
+ -w --nowhite     Do not output whitespace in values.
+ -p --prefix S    Prefix values with string S.
+ -s --suffix S    Append string S to values.
+ --debug
+
+key = freq|node ...
+
+
+cpu_pkts
+--------
+Displays number of network packets handled per CPU.
+First run established the baseline and gives no output.
+Following executions of the program will give the difference since the last run.
+
+dev-populate
+------------
+Not currently used.
+The blockdev-populate executable will populate the /dev directory with devicenodes
+for block-devices. This is currently handled by the devtmpfs which is mounted at boot by the kernel.
+If devtmpfs is missing the init script will start blockdev-populate.
+
+devtag
+------
+With devtag you select and use specific devices without concerning youself with which devicename/node 
+it currently has.
+Main use is for USB-devices that will receive a device-name according to the order of discovery by
+ the kernel.
+A number of Bifrost programs are patched to make direct use of devtag:
+ - minicom
+ - tty_talk
+ - stty
+
+devtag [-hl] [--ns TAG CMD..] [-c TAG SEL..] [TAG]
+ version 1.0.5
+ -l --list
+      list devnames and lookup info
+ --ns TAG CMD ARG*
+      Runs 'CMD' or bash in a separate mount name space.
+      This name space has its own mount of /dev with a devicenode created
+      according to configuration of the devtag 'TAG'.
+ -c --create TAG SELECTOR+
+      'TAG' is your handle for the device that matches the given selectors.
+      'SELECTOR' is a 'name=value' pair. Suitable selectors is reported by the
+      '--list' option.
+ Without an argument:
+      Scans for and prints device information suitable as arguments for the
+      'devname' program.
+ Without exactly one argument [TAG]:
+      Lookup device node for devtag 'TAG'. Print result on stdout.
+ If invoked as 'devtagns' the program will behave as the '--ns' option was given.
+
+ Magic selectors (maybe not reported by devname-info):
+  dev=<pattern>               device name pattern for selecting device node
+  devname=<nodename>          devname-set will use this constant name for the device node
+  class=<subsystem>           class is usb by default
+
+eth-affinity
+------------
+Is run by Bifrost when configuring an interface.
+eth-affinity will assign irq-vectors so that all CPUs are used for traffic in an optimal way.
+Bifrost tries to make sure that CPU 0 is always free of forwarding traffic.
+CPU 0 is also used exclusively for userspace: routing daemons, sshd etc.
+
+ifinfo
+------
+Information about network interfaces.
+Script-friendly.
+
+ifinfo [-aw] [-ps] [-i IFNAME|-I ifindex] [key]
+version 1.6
+ -a --all         Output all keys found.
+ -w --nowhite     Do not output whitespace in values.
+ -p --prefix S    Prefix values with string S.
+ -s --suffix S    Append string S to values.
+ --debug
+
+key = ifname|ifindex|mac|ipv4 ...
+
+ifstat2
+-------
+Network interface rx/tx statistics.
+
+Usage: ifstat2 [ -h?vVzrnasd:t: ] [ PATTERN [ PATTERN ] ]
+ client options:
+  -e extended statistics
+  -v print version
+  -i verbose info
+  -h this help
+ daemon options;
+  -d SECS -- scan interval in SECS seconds and daemonize
+  -t SECS -- time constant for average calc [60] (t>d)
+
+iocethtool
+----------
+Generic interface to ethtool ioctls.
+
+iocethtool [-vh] ETHDEV CMD [FORMAT]*
+ Version 0.2 110404
+ -h --help
+ --list     List known ethtool ioctl names.
+ -v --verbose
+ CMD = number or name of ethtool ioctl.
+       Ex. 0x13, ETHTOOL_GPAUSEPARAM
+ FORMAT = [s|b|d]N:[V]
+ N = number of bytes
+ V = value
+ s = string, b = bitfield, d = decimal
+
+Examples:
+ Reading ETHTOOL_GPAUSEPARAM
+ $ iocethtool eth0 0x12 4: 4: 4:
+ Setting ETHTOOL_SPAUSEPARAM
+ $ iocethtool eth0 ETHTOOL_SPAUSEPARAM 4:1 4:1 4:1
+ Reading ETHTOOL_GDRVINFO
+ $ iocethtool eth0 0x3 s32: s32:
+
+loop
+----
+Make a busyloop.
+Soaks up userspace CPU.
+
+make_bifrost
+------------
+Puts the Bifrost distribution on media.
+
+Usage: /sbin/make_bifrost [-u] <target device> <partition size> <fs image> [archives]
+
+    -u              -- u = does not request confirmation
+    target device   -- device to write the archive to, this varies a
+                       lot from host to host, but is usualy NOT hda/sda
+    partition size  -- size of the 1st partition in MiBs. Size *must* be
+                       smaller than the total size of the media. Rest of the
+                       space is used for swap partition. If the partition size
+                       is set to 0, all of the available space is used for
+                       partition 1 and swap partition is not created
+    fs image        -- a gziped image of a bootable ext2 file system
+                       (eg. boot_image.gz, which is included in this package)
+    archives        -- packages (tarballs). This list should also include the
+                       actual Bifrost package (eg. bifrost-6.1-beta3.tar.gz)
+
+  note that <device> should not containg the leading "/dev/"
+
+nsutil
+------
+Namespace utilities.
+
+ ns
+ --
+ Create a new namespace.
+ ns [-dv] [-t --type NS] [-n --name NAME][-c|--dropcaps CAPSET][-N|--nsrun CMD] [-H|--hrun CMD] [--log LOG] [-- [pipe:]CMD [ARGS ..]]
+
+ -d --daemonize
+ -t --type net|vfs|pid|uts|ipc|user|all
+ --dropcaps [fkmincubst]
+ -N --nsrun [pipe:]CMD
+ -H --hrun CMD
+ -p --pipe NAME - Create a pipe between host and guest. Accessed via fds ENV['H2G_<name>'] = fd,fd
+ --log LOGFILE
+
+ After the child is created, parent will execute all --hrun commands.
+ Meanwhile the child waits until parent signals that it is done. This
+  is done via a pipe.
+ After receiving the signal the child runs all --nsrun commands.
+
+ Examples:
+ Create a new net namespace and assign eth0:
+  ns -t net --hrun "/sbin/nsnetif -i eth0"
+
+ nsnetif
+ -------
+
+ veth
+ ----
+ veth -c --create IF1 IF2
+  Create a pair of veth interfaces.
+
+ macvlan
+ -------
+ macvlan -c --create MASTER NAME (private|vepa|bridge)
+  Create a macvlan interface.
+
+remount
+-------
+Remount root filesystem read-write or read-only.
+Specify 'r' or 'w' as remount operation.
+
+rtstat
+------
+Routing statistics.
+
+rtstat        Version 0.44 080327
+              -help
+              -i interval
+              -c count
+              -s subject [0-2]
+
+ size   IN: hit     tot    mc no_rt bcast madst masrc  OUT: hit     tot     mc
+
+size   == route cache size
+hit    == IN: total number of cache hits per sec
+tot    == IN: total number of cache misses per sec
+mc     == IN: mulicast cache misses per sec
+no_rt  == IN: route table misses per sec
+bcast  == IN: broadcast cache misses per sec
+madst  == IN: dst martians per sec
+masrc  == IN: src martians per sec
+hit    == OUT: total number of cache hits per sec
+tot    == OUT: total number of cache misses per sec
+mc     == OUT: mulicast cache misses per sec
+tot     == GC: total calls per sec
+ignored == GC: calls ignored per sec
+goal_miss  == GC: goal miss per sec
+ovrflw  == GC: dst_overflow per sec
+in_search  == HASH: input hash list search per sec
+out_search  == HASH: output hash list search per sec
+
+
+schedlat
+--------
+Measure scheduling latencies.
+
+schedlat [-hvim] [CPU#]
+ Version 1.2 By Jens Laas, UU 2009-2011.
+ -v --verbose
+ -i --interval SECONDS [2]
+ -m --minmax (do not compute average and median)
+ -a --average (compute average and median)
+ -p --pause NS -- nanosleep NS between intervals
+
+Output:
+<cpu>:<secs>:<max>:<min>:<avg>:<median>:<samples>:<overflows>:
+avg == -1 in case of overflow during calculation.
+overflows > 0 if number of samples does not fit in calibrated array.
+Values in usec.
+
+tty_talk
+--------
+tty_talk sends command to terminal and waits for response
+
+tty_talk [-BAUDRATE] terminal command
+ Valid baudrates 4800, 9600 (Default), 19200, 38400 bps
+
+vers
+----
+Sort names according to version.
+
+vers [-l] [-n] argument ..
+Sorts arguments by version.
+By default the argument is assumed to be a filename and the path is stripped from the name.
+ -l       only print highest versions
+ -n       only print names
+ -p       keep path part of argument
