@@ -1,0 +1,26 @@
+Bifrost uses grub.
+
+The Bifrost kernel uses initramfs to bootstrap the system.
+
+The initramsfs will:
+1. lookup the partition labeled 'bifrost'.
+2. perform fsck on this partition (if fs is of the ext-family).
+3. mount the partition as the root filesystem.
+4. mount /proc in the rootfs.
+4. exec /sbin/init.
+
+The 'init' program in the initramfs will understand the following kernel commandline options:
+rootfstype=NNN
+ Mount rootfs as this type of filesystem. Default is 'ext2'.
+
+rootfslabel=NNN
+ Give an alternative label of the rootfs. The default is 'bifrost'.
+
+rootdelay=N
+ Wait this many seconds before probing for rootfs partition.
+
+root=NNN
+ Override autodetection of rootfs partition.
+
+usbreset
+ init will perform usbreset on all usb-ports.
