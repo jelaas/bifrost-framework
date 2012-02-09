@@ -22,5 +22,8 @@ rootdelay=N
 root=NNN
  Override autodetection of rootfs partition.
 
+init=NNN
+ Run this program instead of /sbin/init.
+
 usbreset
  init will perform usbreset on all usb-ports.
