@@ -1,0 +1,28 @@
+egetty
+------
+
+egetty makes the "console" available over an ethernet device.
+This is not a real console, but a session more like telnet/ssh.
+egetty will start the login program and send any output on the specified ethernet device.
+
+To listen to this output and to send input you need to use the econsole program as a client.
+
+The data is sent in pure ethernet frames using a very simple packet structure. IP is not involved.
+Communcation can only happen over the connected link.
+
+You can start egetty by putting an entry in /etc/inittab, just like your normal getty.
+
+Like:
+e1:2345:respawn:/usr/bin/taskset -c 0 /sbin/egetty eth0
+
+To scan for consoles you use econsole like:
+# econsole eth0 scan
+Scanning for econsoles
+Console: 0 00:0d:b9:24:7b:58
+
+To connect you can use:
+
+# econsole eth0 00:0d:b9:24:7b:58 0
+Use CTRL-] to close connection.
+
+bifrost-public login: 
