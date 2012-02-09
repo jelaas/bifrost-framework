@@ -2,6 +2,9 @@
 op=off
 [ "$1" = on ] && op=on
 
+P=/bin32
+[ `uname -m` = x86_64 ] && P=/bin64
+
 for d in $(/sbin/ifinfo); do
-    ethtool -A $d autoneg $op rx $op tx $op &> /dev/null
+    $P/ethtool -A $d autoneg $op rx $op tx $op &> /dev/null
 done
