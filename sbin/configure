@@ -8,7 +8,7 @@ export TERM=xterm
 export PATH=.:$PATH:/bin:/usr/sbin:/usr/bin:/sbin
 BACKTITLE="Bifrost configuration"
 
-if grep -qs bifrost /proc/mounts|grep -qs ro; then
+if ! test -w /; then
     dialog --no-lines --backtitle "$BACKTITLE" --title Password --msgbox "The root filesystems is mounted read-only. No changes can be made to configuration!" 0 0
 fi
 
@@ -393,6 +393,9 @@ if [ "$1" = upgrade ]; then
     ETC=${ETC:-/etc}
     
     bifrost-upgrade
+
+    echo "Press return to continue"
+    read
     
     exit 0
 fi
