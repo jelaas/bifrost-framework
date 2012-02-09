@@ -48,9 +48,6 @@ if [ $(allcaps) = yes ]; then
 	fi
 	[ "$d" = NONE ] || modprobe $d
     done
-    
-    # Turn off flow control on all interfaces
-    flowctl off
 fi
 
 # - - - - - - - - - - - - - - - - - - - - - -
@@ -58,6 +55,9 @@ fi
 if [ -f /etc/rc.d/rc.inet ]; then
     /etc/rc.d/rc.inet 2> /dev/null
 fi
+
+# Turn off flow control on all interfaces
+flowctl off
 
 # Sleep 4 seconds and then remount the flash disk read-only
 read FLAG < /etc/config.flags/rwsystem
