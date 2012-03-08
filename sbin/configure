@@ -8,8 +8,10 @@ export TERM=xterm
 export PATH=.:$PATH:/bin:/usr/sbin:/usr/bin:/sbin
 BACKTITLE="Bifrost configuration"
 
+READONLY=no
 if ! test -w /; then
     dialog --no-lines --backtitle "$BACKTITLE" --title Password --msgbox "The root filesystems is mounted read-only. No changes can be made to configuration!" 0 0
+    READONLY=yes
 fi
 
 #
@@ -237,6 +239,10 @@ function ifphys {
 	fi
 
 	if [ "$rc" = Save ]; then
+	    if ! test -w $ETC/config.data/${ifname}.nic; then
+		dialog --no-lines --backtitle "$BACKTITLE" --title Password --msgbox "The configuration file is not writable!" 0 0
+		continue
+	    fi
 	    cat > $ETC/config.data/${ifname}.nic <<EOF
 export DHCP_CLIENT=$DHCP_CLIENT
 export IP4ADDR=$IP4ADDR
@@ -253,6 +259,7 @@ export CONFIG_LOG_MARTIANS=$CONFIG_LOG_MARTIANS
 export DESCRIPTION="$DESCRIPTION"
 EOF
             echo "yes" > $ETC/config.flags/${ifname}.nic
+	    dialog --no-lines --backtitle "$BACKTITLE" --title Password --msgbox "Configuration for ${ifname} saved" 0 0
 	fi
     done
     exit 0
@@ -411,7 +418,10 @@ item="root password"
 while true; do
     rc=$(dialog --no-lines --backtitle "$BACKTITLE" --stdout --default-item "$item" --title "Main menu" --ok-label Select --cancel-label Cancel --menu "Choose section" 0 0 0 "Root password" "" "Hostname" "" DNS "" "Network devices" "" Gateway "" Services "" Syslog "" "Bifrost upgrade" "" "Remount rootfs writable" "")
 
-    [ $? = 0 ] || exit 0
+    if [ $? != 0 ] ; then
+	[ "$READONLY" = yes ] && remount r
+	exit 0
+    fi
     
     [ "$rc" = "Root password" ] && item="Hostname" && configure password && continue
     [ "$rc" = "Hostname" ] && item="DNS" && configure hostname  && continue
@@ -422,6 +432,6 @@ while true; do
     [ "$rc" = "Syslog" ] && item="root password" && configure syslog && continue
     [ "$rc" = "Bifrost upgrade" ] && item="Bifrost upgrade" && configure upgrade && continue
 
-    [ "$rc" = "Remount rootfs writable" ] && remount w && continue
+    [ "$rc" = "Remount rootfs writable" ] && remount w && READONLY=yes
     
 done
