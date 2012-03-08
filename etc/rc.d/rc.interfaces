@@ -58,6 +58,7 @@ down()
     else
     	ip link set $IF down
 	ip a a 0.0.0.0 dev $IF
+# Note: if we do flush all label addresses will also be removed!
 #	ip a flush dev $IF
     fi
 }
