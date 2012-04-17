@@ -239,6 +239,7 @@ function ifphys {
 	fi
 
 	if [ "$rc" = Save ]; then
+	    touch $ETC/config.data/${ifname}.nic
 	    if ! test -w $ETC/config.data/${ifname}.nic; then
 		dialog --no-lines --backtitle "$BACKTITLE" --title Password --msgbox "The configuration file is not writable!" 0 0
 		continue
