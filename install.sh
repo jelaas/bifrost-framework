@@ -79,7 +79,7 @@ install -p -m 0400 input.rc     $dst/.inputrc
 install -p -m 0400 bash_logout  $dst/.bash_logout
 install -p -m 0400 bash_profile $dst/.bash_profile
 
-for f in CHANGELOG CONFIG.txt README.txt README-bifrost-6.0 README-bifrost-6.1 README-bifrost-7.0 README-bifrost-7.0.1; do
+for f in CHANGELOG CONFIG.txt README.txt README-bifrost-6.0 README-bifrost-6.1 README-bifrost-7.0 README-bifrost-7.0.1 README-bifrost-7.0.2; do
     cp -Pp $f $dst/$f
 done 
 
