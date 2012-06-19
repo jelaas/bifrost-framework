@@ -27,3 +27,6 @@ init=NNN
 
 usbreset
  init will perform usbreset on all usb-ports.
+
+async
+ Mount the root filesystems with asynchronous writes enabled.
