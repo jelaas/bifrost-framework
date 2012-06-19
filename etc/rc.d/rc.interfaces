@@ -79,7 +79,17 @@ up()
 	if [ ${LABEL:-none} != "none" ]; then
 	    ip a add $IP4ADDR/$IP4MASK broadcast $BROADCAST dev $IF label $IF:$LABEL
 	else
-	    ip a add $IP4ADDR/$IP4MASK broadcast $BROADCAST dev $IF
+	    for addr in $IP4ADDR/$IP4MASK/$BROADCAST\
+                        $IP4ADDR2/$IP4MASK2/$BROADCAST2\
+                        $IP4ADDR3/$IP4MASK3/$BROADCAST3\
+                        $IP4ADDR4/$IP4MASK4/$BROADCAST4\
+                        $IP4ADDR5/$IP4MASK5/$BROADCAST5; do
+		ip=${addr%/*}
+		bcast=${addr/*\/}
+		[ "$bcast" ] || bcast=255.255.255.255
+		[ "$ip" = / ] && continue
+		ip a add $ip broadcast $bcast dev $IF
+	    done
 	    ip link set $IF up
 	fi
     fi

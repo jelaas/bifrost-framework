@@ -158,6 +158,148 @@ function confniclist {
     done
 }
 
+function ifsecondary {
+    ifname=$1
+    IP4ADDR=""
+    IP4MASK=""
+    IP6ADDR=""
+    IP6MASK=""
+    BROADCAST="255.255.255.255"
+    IP4ADDR2=""
+    IP4MASK2=""
+    IP6ADDR2=""
+    IP6MASK2=""
+    BROADCAST2="255.255.255.255"
+    IP4ADDR3=""
+    IP4MASK3=""
+    IP6ADDR3=""
+    IP6MASK3=""
+    BROADCAST3="255.255.255.255"
+    IP4ADDR4=""
+    IP4MASK4=""
+    IP6ADDR4=""
+    IP6MASK4=""
+    BROADCAST4="255.255.255.255"
+    IP4ADDR5=""
+    IP4MASK5=""
+    IP6ADDR5=""
+    IP6MASK5=""
+    BROADCAST5="255.255.255.255"
+
+    [ -f $ETC/config.data/${ifname}.nic ] && . $ETC/config.data/${ifname}.nic
+    [ "$DHCP_CLIENT" = yes ] || DHCP_CLIENT=no
+    
+    [ "$CONFIG_NO_SPOOF" ] || CONFIG_NO_SPOOF=yes
+    [ "$CONFIG_NO_SOURCE" ] || CONFIG_NO_SOURCE=yes
+    [ "$CONFIG_PROXY_ARP" ] || CONFIG_PROXY_ARP=no
+    [ "$CONFIG_REDIRECT" ] || CONFIG_REDIRECT=yes
+    [ "$CONFIG_ACCEPT_REDIRECT" ] || CONFIG_ACCEPT_REDIRECT=no
+    [ "$CONFIG_LOG_MARTIANS" ] || CONFIG_LOG_MARTIANS=yes
+    
+    while true; do
+	rc=$(dialog --no-lines --stdout --backtitle "$BACKTITLE" --title "Secondary addresses $ifname" --ok-label Select --cancel-label Cancel --default-item "$item" --menu  "Choose" 0 0 0\
+ IP4ADDR2 "$IP4ADDR2" IP4PREFIX2 "$IP4MASK2" BROADCAST2 "$BROADCAST2" \
+ IP4ADDR3 "$IP4ADDR3" IP4PREFIX3 "$IP4MASK3" BROADCAST3 "$BROADCAST3" \
+ IP4ADDR4 "$IP4ADDR4" IP4PREFIX4 "$IP4MASK4" BROADCAST4 "$BROADCAST4" \
+ IP4ADDR5 "$IP4ADDR5" IP4PREFIX5 "$IP4MASK5" BROADCAST5 "$BROADCAST5" \
+ Save  "")
+	[ $? = 0 ] || return 0
+	item="$rc"
+
+	n=${rc:~0}
+	rc=${rc:0:-1}
+
+	[ "$n" = 2 ] && ip=$IP4ADDR2 && mask=$IP4MASK2 && bcast=$BROADCAST2
+	[ "$n" = 3 ] && ip=$IP4ADDR3 && mask=$IP4MASK3 && bcast=$BROADCAST3
+	[ "$n" = 4 ] && ip=$IP4ADDR4 && mask=$IP4MASK4 && bcast=$BROADCAST4
+	[ "$n" = 5 ] && ip=$IP4ADDR5 && mask=$IP4MASK5 && bcast=$BROADCAST5
+
+	if [ "$rc" = IP4ADDR ]; then
+	    rc=$(getipaddr "Enter IPv4 address" "$ip")
+	    if [ $? = 0 ]; then
+		if [[ $rc =~ / ]]; then
+		    ip=${rc%%/*}
+		    mask=${rc##*/}
+		    [ "$n" = 2 ] && IP4ADDR2=$ip && IP4MASK2=$mask
+		    [ "$n" = 3 ] && IP4ADDR3=$ip && IP4MASK3=$mask
+		    [ "$n" = 4 ] && IP4ADDR4=$ip && IP4MASK4=$mask
+		    [ "$n" = 5 ] && IP4ADDR5=$ip && IP4MASK5=$mask
+		else
+		    [ "$n" = 2 ] && IP4ADDR2="$rc"
+		    [ "$n" = 3 ] && IP4ADDR3="$rc"
+		    [ "$n" = 4 ] && IP4ADDR4="$rc"
+		    [ "$n" = 5 ] && IP4ADDR5="$rc"
+		fi
+	    fi
+	    continue
+	fi
+	if [ "$rc" = IP4PREFIX ]; then
+	    rc=$(getipaddr "Enter IPv4 prefix length" "$mask")
+	    if [ $? = 0 ]; then
+		[ "$n" = 2 ] && IP4MASK2="$rc"
+		[ "$n" = 3 ] && IP4MASK3="$rc"
+		[ "$n" = 4 ] && IP4MASK4="$rc"
+		[ "$n" = 5 ] && IP4MASK5="$rc"
+	    fi
+	    continue
+	fi
+	if [ "$rc" = BROADCAST ]; then
+	    rc=$(getipaddr "Enter IPv4 broadcast address" "$bcast")
+	    if [ $? = 0 ]; then
+		[ "$n" = 2 ] && BROADCAST2="$rc"
+		[ "$n" = 3 ] && BROADCAST3="$rc"
+		[ "$n" = 4 ] && BROADCAST4="$rc"
+		[ "$n" = 5 ] && BROADCAST5="$rc"
+	    fi
+	    continue
+	fi
+	if [ "$rc" = Sav ]; then
+	    touch $ETC/config.data/${ifname}.nic
+	    if ! test -w $ETC/config.data/${ifname}.nic; then
+		dialog --no-lines --backtitle "$BACKTITLE" --title Attention --msgbox "The configuration file is not writable!" 0 0
+		continue
+	    fi
+	    cat > $ETC/config.data/${ifname}.nic <<EOF
+export DHCP_CLIENT=$DHCP_CLIENT
+export IP4ADDR=$IP4ADDR
+export IP4MASK=$IP4MASK
+export IP6ADDR=$IP6ADDR
+export IP6MASK=$IP6MASK
+export BROADCAST=$BROADCAST
+export IP4ADDR2=$IP4ADDR2
+export IP4MASK2=$IP4MASK2
+export IP6ADDR2=$IP6ADDR2
+export IP6MASK2=$IP6MASK2
+export BROADCAST2=$BROADCAST2
+export IP4ADDR3=$IP4ADDR3
+export IP4MASK3=$IP4MASK3
+export IP6ADDR3=$IP6ADDR3
+export IP6MASK3=$IP6MASK3
+export BROADCAST3=$BROADCAST3
+export IP4ADDR4=$IP4ADDR4
+export IP4MASK4=$IP4MASK4
+export IP6ADDR4=$IP6ADDR4
+export IP6MASK4=$IP6MASK4
+export BROADCAST4=$BROADCAST4
+export IP4ADDR5=$IP4ADDR5
+export IP4MASK5=$IP4MASK5
+export IP6ADDR5=$IP6ADDR5
+export IP6MASK5=$IP6MASK5
+export BROADCAST5=$BROADCAST5
+export CONFIG_NO_SPOOF=$CONFIG_NO_SPOOF
+export CONFIG_NO_SOURCE=$CONFIG_NO_SOURCE
+export CONFIG_PROXY_ARP=$CONFIG_PROXY_ARP
+export CONFIG_REDIRECT=$CONFIG_REDIRECT
+export CONFIG_ACCEPT_REDIRECT=$CONFIG_ACCEPT_REDIRECT
+export CONFIG_LOG_MARTIANS=$CONFIG_LOG_MARTIANS
+export DESCRIPTION="$DESCRIPTION"
+EOF
+            echo "yes" > $ETC/config.flags/${ifname}.nic
+	    dialog --no-lines --backtitle "$BACKTITLE" --title Password --msgbox "Configuration for ${ifname} saved" 0 0
+	fi	
+    done
+}
+
 function ifphys {
     ifname=$1
 
@@ -166,6 +308,26 @@ function ifphys {
     IP6ADDR=""
     IP6MASK=""
     BROADCAST="255.255.255.255"
+    IP4ADDR2=""
+    IP4MASK2=""
+    IP6ADDR2=""
+    IP6MASK2=""
+    BROADCAST2="255.255.255.255"
+    IP4ADDR3=""
+    IP4MASK3=""
+    IP6ADDR3=""
+    IP6MASK3=""
+    BROADCAST3="255.255.255.255"
+    IP4ADDR4=""
+    IP4MASK4=""
+    IP6ADDR4=""
+    IP6MASK4=""
+    BROADCAST4="255.255.255.255"
+    IP4ADDR5=""
+    IP4MASK5=""
+    IP6ADDR5=""
+    IP6MASK5=""
+    BROADCAST5="255.255.255.255"
     [ -f $ETC/config.data/${ifname}.nic ] && . $ETC/config.data/${ifname}.nic
     [ "$DHCP_CLIENT" = yes ] || DHCP_CLIENT=no
     
@@ -177,7 +339,7 @@ function ifphys {
     [ "$CONFIG_LOG_MARTIANS" ] || CONFIG_LOG_MARTIANS=yes
 
     while true; do
-	rc=$(dialog --no-lines --stdout --backtitle "$BACKTITLE" --title "Configure $ifname" --ok-label Select --cancel-label Cancel --default-item "$item" --menu  "Choose" 0 0 0 DHCP "$DHCP_CLIENT" IP4ADDR "$IP4ADDR" IP4PREFIX "$IP4MASK" IP6ADDR "$IP6ADDR" IP6PREFIX "$IP6MASK" no_spoof "$CONFIG_NO_SPOOF" no_source "$CONFIG_NO_SOURCE" proxy_arp "$CONFIG_PROXY_ARP" redirect "$CONFIG_REDIRECT" accept_redirect "$CONFIG_ACCEPT_REDIRECT" log_martians "$CONFIG_LOG_MARTIANS" description "$DESCRIPTION" Save  "")
+	rc=$(dialog --no-lines --stdout --backtitle "$BACKTITLE" --title "Configure $ifname" --ok-label Select --cancel-label Cancel --default-item "$item" --menu  "Choose" 0 0 0 DHCP "$DHCP_CLIENT" IP4ADDR "$IP4ADDR" IP4PREFIX "$IP4MASK" BROADCAST "$BROADCAST" IP6ADDR "$IP6ADDR" IP6PREFIX "$IP6MASK" "Secondary addresses" "" no_spoof "$CONFIG_NO_SPOOF" no_source "$CONFIG_NO_SOURCE" proxy_arp "$CONFIG_PROXY_ARP" redirect "$CONFIG_REDIRECT" accept_redirect "$CONFIG_ACCEPT_REDIRECT" log_martians "$CONFIG_LOG_MARTIANS" description "$DESCRIPTION" Save  "")
 	[ $? = 0 ] || return 0
 
 	item="$rc"
@@ -186,6 +348,7 @@ function ifphys {
 	    [ "$DHCP_CLIENT" = no ] && DHCP_CLIENT=yes && continue
 	    DHCP_CLIENT=no
 	fi
+	[ "$rc" = "Secondary addresses" ] && ifsecondary $ifname && continue
 	[ "$rc" = no_spoof ] && [ "$CONFIG_NO_SPOOF" = yes ] && CONFIG_NO_SPOOF=no && continue
 	[ "$rc" = no_spoof ] && [ "$CONFIG_NO_SPOOF" = no ] && CONFIG_NO_SPOOF=yes && continue
 	[ "$rc" = no_source ] && [ "$CONFIG_NO_SOURCE" = yes ] && CONFIG_NO_SOURCE=no && continue
@@ -241,7 +404,7 @@ function ifphys {
 	if [ "$rc" = Save ]; then
 	    touch $ETC/config.data/${ifname}.nic
 	    if ! test -w $ETC/config.data/${ifname}.nic; then
-		dialog --no-lines --backtitle "$BACKTITLE" --title Password --msgbox "The configuration file is not writable!" 0 0
+		dialog --no-lines --backtitle "$BACKTITLE" --title Attention --msgbox "The configuration file is not writable!" 0 0
 		continue
 	    fi
 	    cat > $ETC/config.data/${ifname}.nic <<EOF
@@ -251,6 +414,26 @@ export IP4MASK=$IP4MASK
 export IP6ADDR=$IP6ADDR
 export IP6MASK=$IP6MASK
 export BROADCAST=$BROADCAST
+export IP4ADDR2=$IP4ADDR2
+export IP4MASK2=$IP4MASK2
+export IP6ADDR2=$IP6ADDR2
+export IP6MASK2=$IP6MASK2
+export BROADCAST2=$BROADCAST2
+export IP4ADDR3=$IP4ADDR3
+export IP4MASK3=$IP4MASK3
+export IP6ADDR3=$IP6ADDR3
+export IP6MASK3=$IP6MASK3
+export BROADCAST3=$BROADCAST3
+export IP4ADDR4=$IP4ADDR4
+export IP4MASK4=$IP4MASK4
+export IP6ADDR4=$IP6ADDR4
+export IP6MASK4=$IP6MASK4
+export BROADCAST4=$BROADCAST4
+export IP4ADDR5=$IP4ADDR5
+export IP4MASK5=$IP4MASK5
+export IP6ADDR5=$IP6ADDR5
+export IP6MASK5=$IP6MASK5
+export BROADCAST5=$BROADCAST5
 export CONFIG_NO_SPOOF=$CONFIG_NO_SPOOF
 export CONFIG_NO_SOURCE=$CONFIG_NO_SOURCE
 export CONFIG_PROXY_ARP=$CONFIG_PROXY_ARP
