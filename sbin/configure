@@ -159,6 +159,8 @@ function confniclist {
 }
 
 function ifsecondary {
+    local item
+    
     ifname=$1
     IP4ADDR=""
     IP4MASK=""
@@ -206,8 +208,10 @@ function ifsecondary {
 	[ $? = 0 ] || return 0
 	item="$rc"
 
-	n=${rc:~0}
-	rc=${rc:0:-1}
+	len=${#rc}
+        len=$[ len - 1 ]
+        n=${rc:~0}
+        rc=${rc:0:len}
 
 	[ "$n" = 2 ] && ip=$IP4ADDR2 && mask=$IP4MASK2 && bcast=$BROADCAST2
 	[ "$n" = 3 ] && ip=$IP4ADDR3 && mask=$IP4MASK3 && bcast=$BROADCAST3
@@ -294,8 +298,7 @@ export CONFIG_ACCEPT_REDIRECT=$CONFIG_ACCEPT_REDIRECT
 export CONFIG_LOG_MARTIANS=$CONFIG_LOG_MARTIANS
 export DESCRIPTION="$DESCRIPTION"
 EOF
-            echo "yes" > $ETC/config.flags/${ifname}.nic
-	    dialog --no-lines --backtitle "$BACKTITLE" --title Password --msgbox "Configuration for ${ifname} saved" 0 0
+	    dialog --no-lines --backtitle "$BACKTITLE" --title Attention --msgbox "Configuration for ${ifname} saved" 0 0
 	fi	
     done
 }
@@ -443,7 +446,7 @@ export CONFIG_LOG_MARTIANS=$CONFIG_LOG_MARTIANS
 export DESCRIPTION="$DESCRIPTION"
 EOF
             echo "yes" > $ETC/config.flags/${ifname}.nic
-	    dialog --no-lines --backtitle "$BACKTITLE" --title Password --msgbox "Configuration for ${ifname} saved" 0 0
+	    dialog --no-lines --backtitle "$BACKTITLE" --title Attention --msgbox "Configuration for ${ifname} saved" 0 0
 	fi
     done
     exit 0
