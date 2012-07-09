@@ -20,3 +20,12 @@ require dhcp_server_identifier
 # A hook script is provided to lookup the hostname if not set by the DHCP
 # server, but it should not be run by default.
 nohook lookup-hostname
+
+# Do not fork unless we get an IP
+# waitip
+
+# Do not assign IPv4LL
+noipv4ll
+
+# Keep trying for 30000 seconds
+timeout 30000
