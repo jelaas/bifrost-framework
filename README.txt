@@ -1,1 +1,0 @@
-README-bifrost-7.0.2
