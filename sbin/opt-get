@@ -51,19 +51,32 @@ fi
 
 # opt-get install <pkg>
 if [ "$1" = install ]; then
-   pkg=$(vers -p -l $(cat /etc/opt/sources.list|fetchlist y)|grep "/$2"|head -n 1)
-   [ "$pkg" ] || exit 1
-   echo "Install $pkg ? y/n"
-   read ANS
-   [ "$ANS" != y ] && exit 1
-   remount w
-   rc=$?
-   cd /
-   if wget --no-check-certificate "$pkg" -O /tmp/p$$.tar.gz; then
-       tar xf /tmp/p$$.tar.gz
-       rm -f /tmp/p$$.tar.gz
-   fi
-   [ "$rc" = 0 ] && remount r
+   shift
+   while [ "$1" ]; do
+       pkg=$(vers -p -l $(cat /etc/opt/sources.list|fetchlist y)|grep "/$1"|head -n 1)
+       if [ -z "$pkg" ]; then
+	   echo "Package $1 not found in repositories"
+	   exit 1
+       fi
+       echo "Install $pkg ? y/n"
+       read ANS
+       [ "$ANS" != y ] && exit 1
+       remount w
+       rc=$?
+       cd /
+       if wget --no-check-certificate "$pkg" -O /tmp/p$$.tar.gz; then
+	   tar xf /tmp/p$$.tar.gz
+	   rm -f /tmp/p$$.tar.gz
+	   echo "Syncing filesystems"
+	   sync
+	   echo "Package $pkg installed"
+       else
+	   echo "Download failed"
+	   rm -f /tmp/p$$.tar.gz
+       fi
+       [ "$rc" = 0 ] && remount r
+       shift
+   done
    exit 0
 fi
 

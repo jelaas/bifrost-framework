@@ -64,7 +64,7 @@ echo "Remounting root device with read-write enabled."
 [ $(allcaps) = yes ] && mount -n -w -o remount /
 
 # Install default versions if needed:
-for f in hosts passwd shadow group fstab hosts.allow syslog.conf resolv.conf ntp.conf TZ dhcpcd.conf; do
+for f in hosts passwd shadow group fstab hosts.allow syslog.conf resolv.conf ntp.conf TZ dhcpcd.conf opt/sources.list; do
     [ -f /etc/$f ] || cp -p /etc/config.preconf/$f.default /etc/$f
 done
 for f in root; do

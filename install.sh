@@ -87,6 +87,7 @@ cp -a Documentation $dst
 cp -a etc           $dst
 mkdir -p $dst/etc/cron.d
 mkdir -p $dst/etc/cron.user
+mkdir -p $dst/etc/opt
 cp -a filter        $dst
 cp -a opt           $dst
 cp -a sbin          $dst
