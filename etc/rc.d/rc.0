@@ -55,7 +55,7 @@
   echo "Unmounting local file systems."
   umount -n -a -tnonfs,notmpfs
 
-  mount -n -o remount,ro /
+  remount r
 
   # Now halt or reboot.
   echo "$message"

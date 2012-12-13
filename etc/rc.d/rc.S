@@ -30,7 +30,7 @@ if [ $(allcaps) = yes ]; then
 	read FLAG < /etc/config.flags/fsck
     fi
     if [ "$FLAG" = yes ]; then
-	mount -n -w -o remount,ro /
+	remount r
 	e2fsck -n LABEL=bifrost
 	
 # If there was a failure, drop into single-user mode.
@@ -61,7 +61,7 @@ fi
 
 # Remount the root filesystem in read-write mode
 echo "Remounting root device with read-write enabled."
-[ $(allcaps) = yes ] && mount -n -w -o remount /
+[ $(allcaps) = yes ] && remount w
 
 # Install default versions if needed:
 for f in hosts passwd shadow group fstab hosts.allow syslog.conf resolv.conf ntp.conf TZ dhcpcd.conf opt/sources.list; do
