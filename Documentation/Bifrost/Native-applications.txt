@@ -206,6 +206,11 @@ remount
 Remount root filesystem read-write or read-only.
 Specify 'r' or 'w' as remount operation.
 
+Remount can also control the synchronous mount-flag.
+By default the root filesystem is mounted with the synchronous flag in Bifrost version 7.1 and later.
+Specify 'a' to remount the root filesystem without the synchronous flag.
+Specify 's' to remount synchronous.
+
 rtstat
 ------
 Routing statistics.
