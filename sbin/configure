@@ -511,6 +511,7 @@ if [ "$1" = services ]; then
     read ipv6forward < $ETC/config.flags/ipv6-forward || ipv6forward=no
     read ntp < $ETC/config.flags/ntp || ntp=no
     read ramlog < $ETC/config.flags/ramlog || ramlog=no
+    read rwsystem < $ETC/config.flags/rwsystem || rwsystem=no
     read sshd < $ETC/config.flags/sshd || sshd=yes
     read swedishkeyboard < $ETC/config.flags/swedish-keyboard || swedishkeyboard=yes
     
@@ -529,10 +530,11 @@ if [ "$1" = services ]; then
     [ "$ipv6forward" = yes ] && ipv6forward=on; [ "$ipv6forward" = no ] && ipv6forward=off
     [ "$ntp" = yes ] && ntp=on; [ "$ntp" = no ] && ntp=off
     [ "$ramlog" = yes ] && ramlog=on; [ "$ramlog" = no ] && ramlog=off
+    [ "$rwsystem" = yes ] && rwsystem=on; [ "$rwsystem" = no ] && rwsystem=off
     [ "$sshd" = yes ] && sshd=on; [ "$sshd" = no ] && sshd=off
     [ "$swedishkeyboard" = yes ] && swedishkeyboard=on; [ "$swedishkeyboard" = no ] && swedishkeyboard=off
     
-    rc=$(dialog --no-lines --backtitle "$BACKTITLE" --stdout --ok-label Apply --separate-output --default-item "$item" --title "Configure services" --checklist "Core services" 0 0 0 cron "Cron daemon" $cron dhcpd "DHCP daemon" $dhcpd rtcache "Disable route cache" $rtcache dnsmasq "Dnsmasq" $dnsmasq fsck "Extra fsck at boot" $fsck fw6rules "IPv6 firewall" $fw6rules fwrules "IPv4 firewall" $fwrules ifrename "Renaming of interfaces" $ifrename ifstat2 "Ifstat2 daemon for network statistics" $ifstat2 inetd "Inetd services" $inetd ipmi "Load ipmi modules for ipmitool" $ipmi ipv4forward "Enable IPv4 forwarding" $ipv4forward ipv6forward "Enable IPv6 forwarding" $ipv6forward ntp "NTP daemon" $ntp ramlog "Persistent ramlog" $ramlog sshd "SSH daemon" $sshd swedishkeyboard "Swedish keyboard" $swedishkeyboard)
+    rc=$(dialog --no-lines --backtitle "$BACKTITLE" --stdout --ok-label Apply --separate-output --default-item "$item" --title "Configure services" --checklist "Core services" 0 0 0 cron "Cron daemon" $cron dhcpd "DHCP daemon" $dhcpd rtcache "Disable route cache" $rtcache dnsmasq "Dnsmasq" $dnsmasq fsck "Extra fsck at boot" $fsck fw6rules "IPv6 firewall" $fw6rules fwrules "IPv4 firewall" $fwrules ifrename "Renaming of interfaces" $ifrename ifstat2 "Ifstat2 daemon for network statistics" $ifstat2 inetd "Inetd services" $inetd ipmi "Load ipmi modules for ipmitool" $ipmi ipv4forward "Enable IPv4 forwarding" $ipv4forward ipv6forward "Enable IPv6 forwarding" $ipv6forward ntp "NTP daemon" $ntp ramlog "Persistent ramlog" $ramlog rwsystem "Rootfs writable after boot" $rwsystem sshd "SSH daemon" $sshd swedishkeyboard "Swedish keyboard" $swedishkeyboard)
     [ $? = 0 ] || exit 0
     
     item=$rc
@@ -552,6 +554,7 @@ if [ "$1" = services ]; then
     ipv6forward=no; [[ "$rc" =~ ipv6forward ]] && ipv6forward=yes; echo $ipv6forward > $ETC/config.flags/ipv6-forward
     ntp=no; [[ "$rc" =~ ntp ]] && ntp=yes; echo $ntp > $ETC/config.flags/ntp
     ramlog=no; [[ "$rc" =~ ramlog ]] && ramlog=yes; echo $ramlog > $ETC/config.flags/ramlog
+    rwsystem=no; [[ "$rc" =~ rwsystem ]] && rwsystem=yes; echo $rwsystem > $ETC/config.flags/rwsystem
     sshd=no; [[ "$rc" =~ sshd ]] && sshd=yes; echo $sshd > $ETC/config.flags/sshd
     swedishkeyboard=no; [[ "$rc" =~ swedishkeyboard ]] && swedishkeyboard=yes; echo $swedishkeyboard > $ETC/config.flags/swedish-keyboard
 	
