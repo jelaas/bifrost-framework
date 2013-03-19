@@ -107,6 +107,12 @@ export TMPSIZE=`cat /etc/config.data/tmpsize`
 mount -n -t tmpfs -o size=$TMPSIZE tmpfs /tmp
 mount -n /sys
 
+# Bind mount /etc/resolv.conf
+touch /tmp/resolv.conf
+chmod 0644 /tmp/resolv.conf
+[ -f /etc/resolv.conf ] && cp /etc/resolv.conf /tmp/resolv.conf
+mount -n --bind /tmp/resolv.conf /etc/resolv.conf
+
 # Detect hardware and modprobe appropriate kernel modules
 # module may be disable in /etc/config.flags/MODULENAME.mod
 if [ $(allcaps) = yes ]; then
