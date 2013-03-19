@@ -64,13 +64,13 @@ echo "Remounting root device with read-write enabled."
 [ $(allcaps) = yes ] && remount w
 
 # Install default versions if needed:
-for f in hosts passwd shadow group fstab hosts.allow syslog.conf resolv.conf ntp.conf TZ dhcpcd.conf opt/sources.list; do
+for f in hosts passwd shadow group fstab hosts.allow syslog.conf ntp.conf TZ dhcpcd.conf opt/sources.list; do
     [ -f /etc/$f ] || cp -p /etc/config.preconf/$f.default /etc/$f
 done
 for f in root; do
     [ -f /etc/cron.user/$f ] || cp -p /etc/config.preconf/cron-$f.default /etc/cron.user/$f
 done
-for f in PANIC; do
+for f in PANIC resolv.conf; do
     [ -f /etc/config.data/$f ] || cp -p /etc/config.preconf/$f.default /etc/config.data/$f
 done
 for f in cron ifstat2 sshd swedish-keyboard ipv4-forward ipv6-forward fw6rules fwrules ignore-icmp-bc ipmi short-defrag-time disable-route-cache; do
@@ -110,7 +110,8 @@ mount -n /sys
 # Bind mount /etc/resolv.conf
 touch /tmp/resolv.conf
 chmod 0644 /tmp/resolv.conf
-[ -f /etc/resolv.conf ] && cp /etc/resolv.conf /tmp/resolv.conf
+[ -f /etc/resolv.conf ] || touch /etc/resolv.conf
+[ -f /etc/config.data/resolv.conf ] && cp /etc/config.data/resolv.conf /tmp/resolv.conf
 mount -n --bind /tmp/resolv.conf /etc/resolv.conf
 
 # Detect hardware and modprobe appropriate kernel modules
