@@ -15,9 +15,10 @@ if [ "$1" = start ]; then
 # Set the NTP server in this file...
     . /etc/config.data/ntp
     
-    rm -f /tmp/ntp.drift
-    touch /tmp/ntp.drift
-    cat >> /tmp/ntp.drift<<EOF
+    mkdir -p /tmp/System/ntp
+    rm -f /tmp/System/ntp/ntp.drift
+    touch /tmp/System/ntp/ntp.drift
+    cat >> /tmp/System/ntp/ntp.drift<<EOF
 0.0
 EOF
 

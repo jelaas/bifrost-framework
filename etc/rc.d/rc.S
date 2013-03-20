@@ -108,12 +108,15 @@ export TMPSIZE=`cat /etc/config.data/tmpsize`
 mount -n -t tmpfs -o size=$TMPSIZE tmpfs /tmp
 mount -n /sys
 
+# Create directory for System files
+mkdir /tmp/System
+
 # Bind mount /etc/resolv.conf
-touch /tmp/resolv.conf
-chmod 0644 /tmp/resolv.conf
+touch /tmp/System/resolv.conf
+chmod 0644 /tmp/System/resolv.conf
 [ -f /etc/resolv.conf ] || touch /etc/resolv.conf
-[ -f /etc/config.data/resolv.conf ] && cp /etc/config.data/resolv.conf /tmp/resolv.conf
-mount -n --bind /tmp/resolv.conf /etc/resolv.conf
+[ -f /etc/config.data/resolv.conf ] && cp /etc/config.data/resolv.conf /tmp/System/resolv.conf
+mount -n --bind /tmp/System/resolv.conf /etc/resolv.conf
 
 # Detect hardware and modprobe appropriate kernel modules
 # module may be disable in /etc/config.flags/MODULENAME.mod
