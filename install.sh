@@ -75,7 +75,6 @@ done
 
 ln -sf bash $dst/bin/sh
 
-install -p -m 0400 input.rc     $dst/.inputrc
 install -p -m 0400 bash_logout  $dst/.bash_logout
 install -p -m 0400 bash_profile $dst/.bash_profile
 

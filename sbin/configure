@@ -89,7 +89,7 @@ if [ "$1" = dns ]; then
     s[1]="none"
     s[2]="none"
     i=0
-    exec 3<$ETC/resolv.conf
+    exec 3<$ETC/config.data/resolv.conf
     while read -u 3 L; do
 	if echo $L|grep -qs "^nameserver" ; then
 	    s[$i]=$(echo $L|cut -d ' ' -f 2)
@@ -107,13 +107,14 @@ if [ "$1" = dns ]; then
 
 	case $rc in
 	    'Save')
-	    grep -v "^nameserver" $ETC/resolv.conf > /tmp/dnsconf.$$
+	    grep -v "^nameserver" $ETC/config.data/resolv.conf > /tmp/dnsconf.$$
 	    if [ -f /tmp/dnsconf.$$ ] ; then
-	        cat /tmp/dnsconf.$$ > $ETC/resolv.conf
-		[ "$DOMAIN" = none ] || (echo "domain $DOMAIN" >> $ETC/resolv.conf)
-		[ "${s[0]}" = none ] || (echo "nameserver ${s[0]}" >> $ETC/resolv.conf)
-		[ "${s[1]}" = none ] || (echo "nameserver ${s[1]}" >> $ETC/resolv.conf)
-		[ "${s[2]}" = none ] || (echo "nameserver ${s[2]}" >> $ETC/resolv.conf)
+	        cat /tmp/dnsconf.$$ > $ETC/config.data/resolv.conf
+		[ "$DOMAIN" = none ] || (echo "domain $DOMAIN" >> $ETC/config.data/resolv.conf)
+		[ "${s[0]}" = none ] || (echo "nameserver ${s[0]}" >> $ETC/config.data/resolv.conf)
+		[ "${s[1]}" = none ] || (echo "nameserver ${s[1]}" >> $ETC/config.data/resolv.conf)
+		[ "${s[2]}" = none ] || (echo "nameserver ${s[2]}" >> $ETC/config.data/resolv.conf)
+		cp $ETC/config.data/resolv.conf $ETC/resolv.conf
 		rm -f /tmp/dnsconf.$$
 	    fi
 	    ;;

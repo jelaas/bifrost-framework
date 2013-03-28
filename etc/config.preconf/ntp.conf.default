@@ -8,10 +8,13 @@ server sunic.sunet.se
 
 stratum 2
 
-#restrict default ignore
+# Deny packets of all kinds, including ntpq and ntpdc queries.
+# Remove line below to accept traffic.
+restrict default ignore
+
 #precision -18                  # clock reading precision (usec)
-driftfile /tmp/ntp.drift	# path for drift file
-statsdir /tmp/                  # directory for statistics files
+driftfile /tmp/System/ntp/ntp.drift	# path for drift file
+statsdir /tmp/System/ntp        # directory for statistics files
 #statistics loopstats peerstats clockstats
 #filegen loopstats file loopstats type day enable
 #filegen peerstats file peerstats type day enable

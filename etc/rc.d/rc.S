@@ -64,13 +64,14 @@ echo "Remounting root device with read-write enabled."
 [ $(allcaps) = yes ] && remount w
 
 # Install default versions if needed:
-for f in hosts passwd shadow group fstab hosts.allow syslog.conf resolv.conf ntp.conf TZ dhcpcd.conf opt/sources.list; do
+for f in hosts passwd shadow group fstab hosts.allow syslog.conf ntp.conf TZ dhcpcd.conf\
+ opt/sources.list ssh/ssh_config ssh/sshd_config rc.d/rc.inet.local inputrc; do
     [ -f /etc/$f ] || cp -p /etc/config.preconf/$f.default /etc/$f
 done
 for f in root; do
     [ -f /etc/cron.user/$f ] || cp -p /etc/config.preconf/cron-$f.default /etc/cron.user/$f
 done
-for f in PANIC; do
+for f in PANIC resolv.conf; do
     [ -f /etc/config.data/$f ] || cp -p /etc/config.preconf/$f.default /etc/config.data/$f
 done
 for f in cron ifstat2 sshd swedish-keyboard ipv4-forward ipv6-forward fw6rules fwrules ignore-icmp-bc ipmi short-defrag-time disable-route-cache; do
@@ -107,6 +108,16 @@ export TMPSIZE=`cat /etc/config.data/tmpsize`
 mount -n -t tmpfs -o size=$TMPSIZE tmpfs /tmp
 mount -n /sys
 
+# Create directory for System files
+mkdir /tmp/System
+
+# Bind mount /etc/resolv.conf
+touch /tmp/System/resolv.conf
+chmod 0644 /tmp/System/resolv.conf
+[ -f /etc/resolv.conf ] || touch /etc/resolv.conf
+[ -f /etc/config.data/resolv.conf ] && cp /etc/config.data/resolv.conf /tmp/System/resolv.conf
+mount -n --bind /tmp/System/resolv.conf /etc/resolv.conf
+
 # Detect hardware and modprobe appropriate kernel modules
 # module may be disable in /etc/config.flags/MODULENAME.mod
 if [ $(allcaps) = yes ]; then
@@ -122,9 +133,10 @@ if [ $(allcaps) = yes ]; then
 fi
 
 # if /var is _not_ the default ram disk, we need to mount it now
-if grep -q /var /etc/fstab; then
+if mount -fn /var &>/dev/null; then
     [ -L /var ] && rm -f /var
     mkdir -p /var
+    fsck -y /var
     mount -n /var || mount -n --bind /tmp /var
 else
     mount -n --bind /tmp /var
@@ -139,8 +151,7 @@ for d in adm spool spool/cron spool/locks tmp log lock run empty db lib/misc; do
     [ -d /var/$d ] || mkdir -p /var/$d
 done
 
-# Mount file systems in fstab (and create an entry for /)
-# but not NFS.
+# Mount file systems in fstab except NFS.
 echo "Mounting any additional filesystems"
 mount -n -avt nonfs
 

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+S="$1"
+C="$2"
+
+if [ "$C" = restart ]; then
+    $0 "$S" stop && $0 "$S" start
+    exit
+fi
+
+if [ "${#S}" -ge 2 -a -x /etc/rc.d/rc.$S ]; then
+   exec /etc/rc.d/rc.$S $C
+fi
+
+for s in $(ls /opt/*/rc.d/rc.$S); do
+    exec $s $C
+done
+echo "$S: No such service"
