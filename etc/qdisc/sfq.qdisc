@@ -1,0 +1,5 @@
+#!/bin/bash
+modprobe sch_sfq
+tc qdisc del dev "$1" root
+tc qdisc add dev "$1" root handle 1: sfq perturb 10
+tc filter add dev "$1" protocol all parent 1: handle 2 flow hash keys dst,proto divisor 256 perturb 10

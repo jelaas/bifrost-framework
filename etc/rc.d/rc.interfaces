@@ -90,6 +90,7 @@ up()
 		[ "$ip" = / ] && continue
 		ip a add $ip broadcast $bcast dev $IF
 	    done
+	    [ "$QDISC" ] && [ -f /etc/qdisc/$QDISC ] && /etc/qdisc/$QDISC $IF
 	    ip link set $IF up
 	fi
     fi
@@ -212,7 +213,6 @@ if      [ $# -lt  2 ]; then usage
 fi
 
 echo label = $LABEL
-
 
 . /etc/config.data/$DEV.nic
 
