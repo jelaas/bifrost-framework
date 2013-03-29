@@ -1,0 +1,4 @@
+#!/bin/bash
+modprobe sch_codel
+tc qdisc del dev "$1" root
+tc qdisc add dev "$1" root codel 

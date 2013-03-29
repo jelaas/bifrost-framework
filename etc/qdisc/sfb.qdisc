@@ -1,0 +1,5 @@
+#!/bin/bash
+modprobe sch_sfb
+tc qdisc del dev "$1" root
+tc qdisc add dev "$1" root handle 1: sfb
+tc qdisc add dev "$1" handle 2: parent 1: prio
