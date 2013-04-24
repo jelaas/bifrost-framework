@@ -1,5 +1,9 @@
 # commands common to all logins
 #export TZ=CET-1CEST,M3.5.0,M10.5.0/03:00:00
+if [ -f /etc/TZ ]; then
+   read TZ < /etc/TZ
+   export TZ
+fi
 HOSTNAME="`cat /etc/HOSTNAME`"
 PATH="/bin:/sbin:/usr/bin:/usr/sbin:/etc:."
 
