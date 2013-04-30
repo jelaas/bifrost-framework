@@ -29,3 +29,4 @@ export HOSTNAME PATH TERM HISTFILE PS1 PS2
 export EDITOR=edit
 export VISUAL=edit
 umask 022
+export PAGER="less -isr"
