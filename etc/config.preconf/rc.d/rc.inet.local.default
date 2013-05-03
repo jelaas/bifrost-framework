@@ -1,0 +1,7 @@
+#!/bin/bash
+
+
+#
+#-- this may be the place to put local modifications, e.g. changes
+#-- gc values, set affinity and similar.
+#
