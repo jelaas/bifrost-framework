@@ -129,11 +129,11 @@ set_spoof()
 	if [ ${CONFIG_NO_SPOOF:-no} = "yes" ]; then
 	    echo -n "$PRE spoof filtering on"
 	    PRE=","
-	    echo 1 > /proc/sys/net/ipv4/conf/$IF/rp_filter
+	    /bin/echo 1 > /proc/sys/net/ipv4/conf/$IF/rp_filter
 	    # Spotted by Gunnar Lingberg CTH 080915
-	    echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
+	    /bin/echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
 	else
-	    echo 0 > /proc/sys/net/ipv4/conf/$IF/rp_filter
+	    /bin/echo 0 > /proc/sys/net/ipv4/conf/$IF/rp_filter
 	fi
     fi
 }
@@ -145,9 +145,9 @@ set_source_route()
 	if [ ${CONFIG_NO_SOURCE:-no} = "yes" ]; then
 	    echo -n "$PRE source routing off"
 	    PRE=","
-	    echo 0 > /proc/sys/net/ipv4/conf/$IF/accept_source_route
+	    /bin/echo 0 > /proc/sys/net/ipv4/conf/$IF/accept_source_route
 	else
-	    echo 1 > /proc/sys/net/ipv4/conf/$IF/accept_source_route
+	    /bin/echo 1 > /proc/sys/net/ipv4/conf/$IF/accept_source_route
 	fi
     fi
 }
@@ -159,9 +159,9 @@ set_proxy_arp()
 	if [ ${CONFIG_PROXY_ARP:-no} = "yes" ]; then
 	    echo -n "$PRE proxy ARP on"
 	    PRE=","
-	    echo 1 > /proc/sys/net/ipv4/conf/$IF/proxy_arp
+	    /bin/echo 1 > /proc/sys/net/ipv4/conf/$IF/proxy_arp
 	else
-	    echo 0 > /proc/sys/net/ipv4/conf/$IF/proxy_arp
+	    /bin/echo 0 > /proc/sys/net/ipv4/conf/$IF/proxy_arp
 	fi
     fi
 }
@@ -173,9 +173,9 @@ set_redirect()
 	if [ ${CONFIG_REDIRECT:-no} = "yes" ]; then
 	    echo -n "$PRE send redirects"
 	    PRE=","
-	    echo 1 > /proc/sys/net/ipv4/conf/$IF/send_redirects
+	    /bin/echo 1 > /proc/sys/net/ipv4/conf/$IF/send_redirects
 	else
-	    echo 0 > /proc/sys/net/ipv4/conf/$IF/send_redirects
+	    /bin/echo 0 > /proc/sys/net/ipv4/conf/$IF/send_redirects
 	fi
     fi
 }
@@ -187,9 +187,9 @@ accept_redirect ()
 	if [ ${CONFIG_ACCEPT_REDIRECT:-no} = "yes" ]; then
 	    echo -n "$PRE Accept Redirects"
 	    PRE=","
-	    echo 1 > /proc/sys/net/ipv4/conf/$IF/accept_redirects
+	    /bin/echo 1 > /proc/sys/net/ipv4/conf/$IF/accept_redirects
 	else
-	    echo 0 > /proc/sys/net/ipv4/conf/$IF/accept_redirects
+	    /bin/echo 0 > /proc/sys/net/ipv4/conf/$IF/accept_redirects
 	fi
     fi
 }
@@ -201,9 +201,9 @@ log_martinans()
 	if [ ${CONFIG_LOG_MARTIANS:-no} = "yes" ]; then
 	    echo -n "$PRE log martians"
 	    PRE=","
-	    echo 1 > /proc/sys/net/ipv4/conf/$IF/log_martians
+	    /bin/echo 1 > /proc/sys/net/ipv4/conf/$IF/log_martians
 	else
-	    echo 0 > /proc/sys/net/ipv4/conf/$IF/log_martians
+	    /bin/echo 0 > /proc/sys/net/ipv4/conf/$IF/log_martians
 	fi
     fi
 }

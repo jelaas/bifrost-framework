@@ -166,7 +166,7 @@ fi
 read FLAG < /etc/config.flags/usb-suspend
 if [ "$FLAG" != yes ]; then
     if [ -f /sys/module/usbcore/parameters/autosuspend -a $(allcaps) = yes ]; then
-	echo -1 > /sys/module/usbcore/parameters/autosuspend
+	/bin/echo -1 > /sys/module/usbcore/parameters/autosuspend
     fi
 fi
 

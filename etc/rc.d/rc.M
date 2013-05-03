@@ -31,7 +31,7 @@ fi
 [ -f /etc/HOSTNAME ] && hostname `cat /etc/HOSTNAME`
 
 # Set reboot time for panic to 1 minute
-[ $(allcaps) = yes ] && (echo 60 > /proc/sys/kernel/panic)
+[ $(allcaps) = yes ] && (/bin/echo 60 > /proc/sys/kernel/panic)
 
 # Check kernel module dependencies
 [ $(allcaps) = yes ] && depmod

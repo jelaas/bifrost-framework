@@ -13,7 +13,7 @@ done
 read FLAG < /etc/config.flags/disable-route-cache
 if [ "$FLAG" = yes ]; then
     echo "Disabling route cache."
-    echo -1 > /proc/sys/net/ipv4/rt_cache_rebuild_count
+    /bin/echo -1 > /proc/sys/net/ipv4/rt_cache_rebuild_count
 fi
 
 # Setup filter rules before enabling the network interfaces
@@ -88,10 +88,10 @@ if [ -e /proc/sys/net/ipv4/ipfrag_time ]; then
     SHORT_DEFRAG_TIME=`cat /etc/config.flags/short-defrag-time`
     if [ ${SHORT_DEFRAG_TIME:-yes} = "yes" ]; then
 	echo "Turning on the Short Defrag Time option (to 2 seconds)"
-	echo 2 > /proc/sys/net/ipv4/ipfrag_time
+	/bin/echo 2 > /proc/sys/net/ipv4/ipfrag_time
     else
 	echo "Turning off the Short Defrag Time option (to 30 seconds)"
-	echo 30 > /proc/sys/net/ipv4/ipfrag_time
+	/bin/echo 30 > /proc/sys/net/ipv4/ipfrag_time
     fi
 fi
 
@@ -101,26 +101,26 @@ if [ -e /proc/sys/net/ipv4/ip_forward ]; then
     IP_FORWARD=`cat /etc/config.flags/ipv4-forward`
     if [ ${IP_FORWARD:-yes} = "yes" ]; then
 	echo "Turning on IPV4 forwarding (ignore previous warning)"
-	echo 1 > /proc/sys/net/ipv4/ip_forward
+	/bin/echo 1 > /proc/sys/net/ipv4/ip_forward
     else
 	echo "Turning off IPV4 forwarding (no routing possible)"
-	echo 0 > /proc/sys/net/ipv4/ip_forward
+	/bin/echo 0 > /proc/sys/net/ipv4/ip_forward
     fi
 fi
 
 # increase ipv6 fib, we have now passed 4k routes
-echo 2048 >   /proc/sys/net/ipv6/route/gc_thresh
-echo 65536 >   /proc/sys/net/ipv6/route/max_size
+/bin/echo 2048 >   /proc/sys/net/ipv6/route/gc_thresh
+/bin/echo 65536 >   /proc/sys/net/ipv6/route/max_size
 
 # IPV6 forwarding must be turned on 
 if [ -e /proc/sys/net/ipv6/conf/all/forwarding ]; then
     IP_FORWARD=`cat /etc/config.flags/ipv6-forward`
     if [ ${IP_FORWARD:-yes} = "yes" ]; then
 	echo "Turning on IPV6 forwarding (ignore previous warning)"
-	echo 1 > /proc/sys/net/ipv6/conf/all/forwarding
+	/bin/echo 1 > /proc/sys/net/ipv6/conf/all/forwarding
     else
 	echo "Turning off IPV6 forwarding (no routing possible)"
-	echo 0 > /proc/sys/net/ipv6/conf/all/forwarding
+	/bin/echo 0 > /proc/sys/net/ipv6/conf/all/forwarding
     fi
 fi
 
@@ -129,10 +129,10 @@ if [ -e /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts ]; then
     IGNORE_ICMP_BC=`cat /etc/config.flags/ignore-icmp-bc`
     if [ ${IGNORE_ICMP_BC:-yes} = "yes" ]; then
         echo "Denying ICMP broadcasts"
-        echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
+        /bin/echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
     else
         echo "Accepting ICMP broadcasts"
-        echo 0 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
+        /bin/echo 0 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
     fi
 fi
 
@@ -149,7 +149,7 @@ fi
 # Turn on TCP SYN-flooding protection.
 if [ -e /proc/sys/net/ipv4/tcp_syncookies ]; then
     echo "Turning on TCP SYN flood protection"
-    echo 1 > /proc/sys/net/ipv4/tcp_syncookies
+    /bin/echo 1 > /proc/sys/net/ipv4/tcp_syncookies
 fi
 
 #-- check for local settings of conntrack and gc_thresh
