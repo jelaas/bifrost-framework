@@ -1,0 +1,97 @@
+ Install Bifrost from diskimage
+--------------------------------
+Insert usb-memory.
+If your operatingsystem automatically mounts the media you need to unmount it first.
+Usually this will be: "umount /dev/sdb1"
+You can check which device or path you need to unmount by issuing the "mount" command.
+
+Now copy the diskimage to your device.
+$ dd if=bifrost.img of=/dev/sdx bs=4096
+
+You need to change "/dev/sdx" to the actual device.
+ATTN! If you write to the wrong device you risk DESTROYING DATA on another harddrive/media.
+
+ Install Bifrost by hand
+-------------------------
+Insert usb-memory.
+If your operatingsystem automatically mounts the media you need to unmount it first.
+Usually this will be: "umount /dev/sdb1"
+You can check which device or path you need to unmount by issuing the "mount" command.
+
+Use fdisk to remove any existing partitions and create a partition for bifrost.
+Create an ext2 filesystem on this partition.
+$ mke2fs /dev/sdx1
+
+Label the filesystem as "bifrost". This is important for boot to work correctly.
+$ e2label /dev/sdx1 bifrost
+
+Unpack the Bifrost distribution tarball into the filesystem.
+$ mount /dev/sd1 /mnt
+$ cd /mnt
+$ tar xf bifrost-7.1-1.tar.gz
+
+Chroot into the filesystem.
+$ chroot /mnt
+
+Install grub. 
+$ mount -t devtmpfs devtmpfs /dev
+$ mount -t proc proc /proc
+$ grub-install /dev/sdx
+$ grub-mkconfig > /boot/grub/grub.cfg
+$ sync
+
+ Creating a bootable diskimage from within Bifrost 7.1
+-------------------------------------------------------
+First you need the bifrost distribution tarball.
+Download or copy to /.
+$ make-bifrost-image /bifrost-beta-7.1-1.tar.gz
+The image is now at /tmp/imagefs/bifrost.img
+To install just copy or dd to a device.
+$ dd if=/tmp/imagefs/bifrost.img of=/dev/sdx bs=4096
+
+ Grub2 installation
+--------------------
+Boot Bifrost as usual.
+
+$ remount w
+$ grub-install /dev/sda
+$ grub-mkconfig > /boot/grub/grub.cfg
+
+ Rescue a failed grub2 installation
+-------------------------------------
+Change /dev/sdx below to the actual device.
+Usually it will be /dev/sdb.
+
+$ mount /dev/sdb1 /mnt
+$ chroot /mnt
+$ mount -t devtmpfs devtmpfs /dev
+$ mount -t proc proc /proc
+$ grub-install /dev/sdx
+$ grub-mkconfig > /boot/grub/grub.cfg
+$ sync
+ 
+ Expanding the root filesystem
+-------------------------------
+Note start of partition
+$ partx 1 /dev/sda -o start
+
+Resize partition
+$ fdisk /dev/sda
+d
+n
+p
+1
+<startsector>
+<return>
+w
+
+$ reboot
+
+ Creating additional partitions
+--------------------------------
+If you need to have a writable partition to continously save data, /var is used for this.
+By default /var is tmpfs filesystem which wont survive reboots.
+Instead of expanding the root partition you can use this space to create a separate /var partition.
+The advantage is that you can keep the root filesystem mounted read-only, which is the safest option. If the root filesystem is mounted read-write the possibility of filesystem corruption exist.
+
+If you will make extensive use of optional packages consider creating a separate partition for /opt.

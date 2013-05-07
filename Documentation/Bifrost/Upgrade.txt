@@ -1,0 +1,9 @@
+ Upgrading existing installation
+---------------------------------
+
+Simply unpack the distrubution tarball from the root '/' directory.
+Run: 'bifrost-upgrade'.
+Then reboot.
+
+If your previous Bifrost versioon was below 7.1 you may wish to install the grub2 boot loader.
+See Install.txt for instructions.
