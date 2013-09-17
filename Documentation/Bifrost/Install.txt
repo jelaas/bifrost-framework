@@ -11,6 +11,9 @@ $ dd if=bifrost.img of=/dev/sdx bs=4096
 You need to change "/dev/sdx" to the actual device.
 ATTN! If you write to the wrong device you risk DESTROYING DATA on another harddrive/media.
 
+If the usb-memory refuses to boot (possibly with a GRUB error),
+ see "Rescue a failed grub2 installation" below.
+
  Install Bifrost by hand
 -------------------------
 Insert usb-memory.
@@ -26,7 +29,7 @@ Label the filesystem as "bifrost". This is important for boot to work correctly.
 $ e2label /dev/sdx1 bifrost
 
 Unpack the Bifrost distribution tarball into the filesystem.
-$ mount /dev/sd1 /mnt
+$ mount /dev/sdx1 /mnt
 $ cd /mnt
 $ tar xf bifrost-7.1-1.tar.gz
 
@@ -62,7 +65,7 @@ $ grub-mkconfig > /boot/grub/grub.cfg
 Change /dev/sdx below to the actual device.
 Usually it will be /dev/sdb.
 
-$ mount /dev/sdb1 /mnt
+$ mount /dev/sdx1 /mnt
 $ chroot /mnt
 $ mount -t devtmpfs devtmpfs /dev
 $ mount -t proc proc /proc
