@@ -10,7 +10,7 @@ if [ "$(ps acxh|grep -c sshd)" = 0 ]; then
 fi
 
 # Check for syslogd or syslog-ng
-if [ "$(ps acxh|grep -c syslog) = 0 ]; then
+if [ "$(ps acxh|grep -c syslog)" = 0 ]; then
         /etc/rc.d/rc.syslog
 fi
 
