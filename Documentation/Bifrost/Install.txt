@@ -92,7 +92,7 @@ $ reboot
 
  Creating additional partitions
 --------------------------------
-If you need to have a writable partition to continously save data, /var is used for this.
+If you need to have a writable partition to continuously save data, /var is used for this.
 By default /var is tmpfs filesystem which wont survive reboots.
 Instead of expanding the root partition you can use this space to create a separate /var partition.
 The advantage is that you can keep the root filesystem mounted read-only, which is the safest option. If the root filesystem is mounted read-write the possibility of filesystem corruption exist.
