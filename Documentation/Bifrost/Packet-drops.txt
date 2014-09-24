@@ -1,0 +1,22 @@
+Have you checked that there is an ip route for the packet?
+Once the packet is received the receiving interface is no longer important (except for
+rp checks).
+
+Try disabling rp_filter if its enabled.
+$ echo 0 > /proc/sys/net/ipv4/conf/default/rp_filter
+$ echo 0 > /proc/sys/net/ipv4/conf/<dev>/rp_filter
+
+Interface configuration should be:
+CONFIG_NO_SPOOF=no in /etc/config.data/<dev>.nic
+You can also disable "no_spoof" for the interface via the 'configure' program.
+
+Also you should check _where_ the packet is dropped if possible.
+$ netstat -s
+$ netstat -i <dev>
+$ tc -s qdisc show dev <dev>
+$ iptables -xnvL
+
+Worried about ARP ?
+You can check with tcpdump if arp answers are getting through. If you have a ping
+running against nexthop, does the problem disappear ?
+The timeout is based on /proc/sys/net/ipv4/neigh/default/base_reachable_time_ms
