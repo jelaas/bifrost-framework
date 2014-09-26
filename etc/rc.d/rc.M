@@ -146,3 +146,6 @@ for file in $(ls /opt/*/etc/config.flags/* 2>/dev/null); do
         fi
     fi
 done
+
+read GREET < /etc/.version
+echo ${GREET^} ready.
