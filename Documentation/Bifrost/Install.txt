@@ -41,6 +41,8 @@ $ mount -t devtmpfs devtmpfs /dev
 $ mount -t proc proc /proc
 $ grub-install /dev/sdx
 $ grub-mkconfig > /boot/grub/grub.cfg
+$ umount /dev
+$ umount /proc
 $ sync
 
  Creating a bootable diskimage from within Bifrost 7.1
