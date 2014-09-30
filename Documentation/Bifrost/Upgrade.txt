@@ -10,6 +10,7 @@ $ cd /
 $ umount /mnt
 $ bifrost-upgrade
 $ remount r
+$ sync
 $ reboot
 
 If your previous Bifrost version was below 7.1 you may wish to install the grub2 boot loader.
