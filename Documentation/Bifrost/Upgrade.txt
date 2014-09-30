@@ -1,7 +1,7 @@
  Upgrading existing installation
 ---------------------------------
 
-Unpacking the distrubution tarball:
+Unpacking the distribution tarball:
 $ remount w
 $ mount LABEL=bifrost /mnt
 $ cd /mnt
