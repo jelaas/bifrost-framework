@@ -53,7 +53,7 @@
   $command -w
 
   echo "Unmounting local file systems."
-  umount -n -a -tnonfs,notmpfs,nodevtmpfs,noproc
+  umount -n -a -tnonfs,notmpfs,nodevtmpfs,noproc,norootfs
 
   remount r
 
