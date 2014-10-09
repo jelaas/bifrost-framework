@@ -67,15 +67,32 @@ if [ -f  $FILE ] && [ "`cat $FILE`" = "yes" ]; then
      /sbin/ifrename -t -c $NETDEVS/ifrename
 fi
 
+# First create virtual interfaces
 for F in $NETDEVS/*.nic NONE ; do
+    ENABLED=no
     IF=$(basename $F)
     IF=${IF//.nic/}
-    FILE=/etc/config.flags/$IF.nic
-    [ -f $FILE ] && [ "`cat $FILE`" = "yes" ] && /etc/rc.d/rc.interfaces $IF up
+    [ -f /etc/config.flags/$IF.nic ] && read ENABLED < /etc/config.flags/$IF.nic
+    if [ "$ENABLED" = "yes" ]; then
+	IFTYPE=$(. $F;echo $IFTYPE)
+	[ "$IFTYPE" = team -o "$IFTYPE" = bind ] && /etc/rc.d/rc.interfaces $IF up
+    fi
+done
+
+# Bring up the rest of the interfaces
+for F in $NETDEVS/*.nic NONE ; do
+    ENABLED=no
+    IF=$(basename $F)
+    IF=${IF//.nic/}
+    [ -f /etc/config.flags/$IF.nic ] && read ENABLED < /etc/config.flags/$IF.nic
+    if [ "$ENABLED" = "yes" ]; then
+	IFTYPE=$(. $F;echo $IFTYPE)
+	[ "$IFTYPE" != team -a "$IFTYPE" != bind ] && /etc/rc.d/rc.interfaces $IF up
+    fi
 done
 
 # Hook after network devices are brought up
-[ -f /etc/config.hooks/inet.netdevs.pre ] && . /etc/config.hooks/inet.netdevs.post
+[ -f /etc/config.hooks/inet.netdevs.post ] && . /etc/config.hooks/inet.netdevs.post
 
 if [ -f /etc/rc.d/rc.packetfilter ]; then
     /etc/rc.d/rc.packetfilter 2> /dev/null

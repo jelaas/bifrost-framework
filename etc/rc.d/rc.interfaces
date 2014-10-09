@@ -74,8 +74,21 @@ up()
             ip link add link $IF1Q name $DEV type vlan id $DOT1Q
     fi
 
-    if [ ${IP4ADDR:-none} != "none" ]; then
+    # Create bonding interface
+    [ "$IFTYPE" = bond ] && modprobe bonding && /sbin/ip link add $IF type bond
 
+    # Create team interface
+    [ "$IFTYPE" = team ] && modprobe bonding && /sbin/ip link add $IF type team
+
+    if [ "$IFTYPE" = macvlan ]; then
+        # Create macvlan interface
+	[ "$MASTER" ] && /sbin/ip link add link $MASTER $IF type macvlan
+    else
+	[ "$MASTER" ] && /sbin/ip link set $IF master $MASTER
+    fi
+    
+    if [ ${IP4ADDR:-none} != "none" ]; then
+	
 	if [ ${LABEL:-none} != "none" ]; then
 	    ip a add $IP4ADDR/$IP4MASK broadcast $BROADCAST dev $IF label $IF:$LABEL
 	else

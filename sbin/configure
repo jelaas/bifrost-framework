@@ -6,7 +6,9 @@
 
 export TERM=xterm
 export PATH=.:$PATH:/bin:/usr/sbin:/usr/bin:/sbin
+export ETC
 BACKTITLE="Bifrost configuration"
+export CONFIGURE=$0
 
 READONLY=no
 if ! test -w /; then
@@ -144,6 +146,13 @@ fi
 # Interfaces
 #
 
+function getifname {
+    rc=$(dialog --no-lines --backtitle "$BACKTITLE" --stdout --inputbox "$1" 0 0 "$2") 
+    [ $? = 0 ] || return 1
+    echo $rc
+    return 0
+}
+
 function getipaddr {
     rc=$(dialog --no-lines --backtitle "$BACKTITLE" --stdout --inputbox "$1" 0 0 "$2") 
     [ $? = 0 ] || return 1
@@ -206,6 +215,7 @@ function ifsecondary {
     IP6MASK5=""
     BROADCAST5="255.255.255.255"
     QDISC=""
+    IFTYPE=""
     [ -f $ETC/config.data/${ifname}.nic ] && . $ETC/config.data/${ifname}.nic
     [ "$DHCP_CLIENT" = yes ] || DHCP_CLIENT=no
     
@@ -351,6 +361,7 @@ function ifphys {
     IP6MASK5=""
     BROADCAST5="255.255.255.255"
     QDISC=""
+    IFTYPE=""
     [ -f $ETC/config.data/${ifname}.nic ] && . $ETC/config.data/${ifname}.nic
     [ "$DHCP_CLIENT" = yes ] || DHCP_CLIENT=no
     
@@ -440,6 +451,7 @@ function ifphys {
 		continue
 	    fi
 	    cat > $ETC/config.data/${ifname}.nic <<EOF
+export IFTYPE=$IFTYPE
 export DHCP_CLIENT=$DHCP_CLIENT
 export IP4ADDR=$IP4ADDR
 export IP4MASK=$IP4MASK
@@ -488,15 +500,39 @@ if [ "$1" = if ]; then
     F=/tmp/ifcfg.$$
     while true; do
 	nics="$((ifinfo|grep -v lo;confniclist)|sort|uniq)"
+	echo $nics > /tmp/fisken
 	cp /dev/null $F
 	for nic in $nics; do
 	    echo \"$nic\" \"$(ifinfo -w -s - -i $nic driver)$(ifinfo -w -s Mbit- -i $nic speedmax)$(ifinfo -w -i $nic bus_info)\" >> $F
 	done
-    
+	echo \"Create Bonding Interface\" \"\" >> $F
+	echo \"Create Team Interface\" \"\" >> $F
+	echo \"Create Macvlan Interface\" \"\" >> $F
 	rc=$(dialog --no-lines --stdout --backtitle "$BACKTITLE" --title "Configure interfaces" --ok-label Select --cancel-label Cancel --menu  "Choose interface" 0 0 0 --file $F)
 	
 	[ $? = 0 ] || exit 0
 	
+	if [[ $rc =~ Bonding ]]; then
+	    nic=$(getifname "Enter interface name" "")
+	    [ -f $ETC/config.data/$nic.nic ] && continue
+	    echo 'IFTYPE=bond' > $ETC/config.data/$nic.nic
+	    echo yes > $ETC/config.flags/$nic.nic
+	    continue
+	fi
+	if [[ $rc =~ Team ]]; then
+	    nic=$(getifname "Enter interface name" "")
+	    [ -f $ETC/config.data/$nic.nic ] && continue
+	    echo 'IFTYPE=team' > $ETC/config.data/$nic.nic
+	    echo yes > $ETC/config.flags/$nic.nic
+	    continue
+	fi
+	if [[ $rc =~ Macvlan ]]; then
+	    nic=$(getifname "Enter interface name" "")
+	    [ -f $ETC/config.data/$nic.nic ] && continue
+	    echo 'IFTYPE=macvlan' > $ETC/config.data/$nic.nic
+	    echo yes > $ETC/config.flags/$nic.nic
+	    continue
+	fi
 	ifphys $rc
     done
     exit 0
@@ -643,14 +679,14 @@ while true; do
 	exit 0
     fi
     
-    [ "$rc" = "Root password" ] && item="Hostname" && configure password && continue
-    [ "$rc" = "Hostname" ] && item="DNS" && configure hostname  && continue
-    [ "$rc" = "DNS" ] && item="Network devices" && configure dns && continue
-    [ "$rc" = "Network devices" ] && item="Gateway" && configure if && continue
-    [ "$rc" = "Gateway" ] && item="Services" && configure gateway && continue
-    [ "$rc" = "Services" ] && item="Syslog" && configure services && continue
-    [ "$rc" = "Syslog" ] && item="root password" && configure syslog && continue
-    [ "$rc" = "Bifrost upgrade" ] && item="Bifrost upgrade" && configure upgrade && continue
+    [ "$rc" = "Root password" ] && item="Hostname" && $CONFIGURE password && continue
+    [ "$rc" = "Hostname" ] && item="DNS" && $CONFIGURE hostname  && continue
+    [ "$rc" = "DNS" ] && item="Network devices" && $CONFIGURE dns && continue
+    [ "$rc" = "Network devices" ] && item="Gateway" && $CONFIGURE if && continue
+    [ "$rc" = "Gateway" ] && item="Services" && $CONFIGURE gateway && continue
+    [ "$rc" = "Services" ] && item="Syslog" && $CONFIGURE services && continue
+    [ "$rc" = "Syslog" ] && item="root password" && $CONFIGURE syslog && continue
+    [ "$rc" = "Bifrost upgrade" ] && item="Bifrost upgrade" && $CONFIGURE upgrade && continue
 
     [ "$rc" = "Remount rootfs writable" ] && remount w && READONLY=yes
     
