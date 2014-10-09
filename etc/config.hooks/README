@@ -1,0 +1,5 @@
+Some places in the init process will call out to hooks if they are present in this directory.
+
+Current hooks:
+/etc/config.hooks/inet.netdevs.pre
+/etc/config.hooks/inet.netdevs.post

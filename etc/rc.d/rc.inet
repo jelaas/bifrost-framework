@@ -57,6 +57,9 @@ fi
 # Bring up interfaces.
 NETDEVS=/etc/config.data
 
+# Hook before network devices are brought up
+[ -f /etc/config.hooks/inet.netdevs.pre ] && . /etc/config.hooks/inet.netdevs.pre
+
 # Rename ethX to get the ethX interfaces in correct order.
 FILE=/etc/config.flags/ifrename
 if [ -f  $FILE ] && [ "`cat $FILE`" = "yes" ]; then
@@ -70,6 +73,9 @@ for F in $NETDEVS/*.nic NONE ; do
     FILE=/etc/config.flags/$IF.nic
     [ -f $FILE ] && [ "`cat $FILE`" = "yes" ] && /etc/rc.d/rc.interfaces $IF up
 done
+
+# Hook after network devices are brought up
+[ -f /etc/config.hooks/inet.netdevs.pre ] && . /etc/config.hooks/inet.netdevs.post
 
 if [ -f /etc/rc.d/rc.packetfilter ]; then
     /etc/rc.d/rc.packetfilter 2> /dev/null
