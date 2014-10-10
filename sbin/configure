@@ -216,6 +216,7 @@ function ifsecondary {
     BROADCAST5="255.255.255.255"
     QDISC=""
     IFTYPE=""
+    MASTER=""
     [ -f $ETC/config.data/${ifname}.nic ] && . $ETC/config.data/${ifname}.nic
     [ "$DHCP_CLIENT" = yes ] || DHCP_CLIENT=no
     
@@ -362,6 +363,7 @@ function ifphys {
     BROADCAST5="255.255.255.255"
     QDISC=""
     IFTYPE=""
+    MASTER=""
     [ -f $ETC/config.data/${ifname}.nic ] && . $ETC/config.data/${ifname}.nic
     [ "$DHCP_CLIENT" = yes ] || DHCP_CLIENT=no
     
@@ -375,7 +377,7 @@ function ifphys {
     while true; do
 	rc=$(dialog --no-lines --stdout --backtitle "$BACKTITLE" --title "Configure $ifname" --ok-label Select --cancel-label Cancel --default-item "$item" --menu  "Choose" 0 0 0 DHCP "$DHCP_CLIENT"\
 	 IP4ADDR "$IP4ADDR" IP4PREFIX "$IP4MASK" BROADCAST "$BROADCAST" IP6ADDR "$IP6ADDR" IP6PREFIX "$IP6MASK" "Secondary addresses" ""\
-	 QDISC "$QDISC" no_spoof "$CONFIG_NO_SPOOF" no_source "$CONFIG_NO_SOURCE" proxy_arp "$CONFIG_PROXY_ARP" redirect "$CONFIG_REDIRECT" accept_redirect "$CONFIG_ACCEPT_REDIRECT"\
+	 QDISC "$QDISC" master "$MASTER" no_spoof "$CONFIG_NO_SPOOF" no_source "$CONFIG_NO_SOURCE" proxy_arp "$CONFIG_PROXY_ARP" redirect "$CONFIG_REDIRECT" accept_redirect "$CONFIG_ACCEPT_REDIRECT"\
 	 log_martians "$CONFIG_LOG_MARTIANS" description "$DESCRIPTION" Save  "")
 	[ $? = 0 ] || return 0
 
@@ -402,6 +404,11 @@ function ifphys {
 	if [ "$rc" = QDISC ]; then
 		rc=$(getqdisc $QDISC)
 		[ $? = 0 ] && QDISC=$rc
+		continue
+	fi
+	if [ "$rc" = master ]; then
+		rc=$(getifname "Enter master device name" "$MASTER")
+		[ $? = 0 ] && MASTER=$rc
 		continue
 	fi
 
@@ -452,6 +459,7 @@ function ifphys {
 	    fi
 	    cat > $ETC/config.data/${ifname}.nic <<EOF
 export IFTYPE=$IFTYPE
+export MASTER=$MASTER
 export DHCP_CLIENT=$DHCP_CLIENT
 export IP4ADDR=$IP4ADDR
 export IP4MASK=$IP4MASK
