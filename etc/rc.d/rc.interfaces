@@ -78,7 +78,7 @@ up()
     [ "$IFTYPE" = bond ] && modprobe bonding && /sbin/ip link add $IF type bond
 
     # Create team interface
-    [ "$IFTYPE" = team ] && modprobe bonding && /sbin/ip link add $IF type team
+    [ "$IFTYPE" = team ] && modprobe team && /sbin/ip link add $IF type team
 
     if [ "$IFTYPE" = macvlan ]; then
         # Create macvlan interface
