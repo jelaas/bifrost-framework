@@ -6,7 +6,7 @@ function killproc {
 }
 
 
-[ "$1" = start ] && [ -f /usr/sbin/crond ] && taskset -c 0 /usr/sbin/crond && exit 0
+[ "$1" = start ] && [ -f /usr/sbin/crond ] && taskset -c 0 /usr/sbin/crond -p && exit 0
 [ "$1" = stop ] && [ -f /usr/sbin/crond ] && killproc crond && exit 0
 
 exit 1
