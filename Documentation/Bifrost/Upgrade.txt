@@ -5,6 +5,8 @@ Unpacking the distribution tarball:
 $ remount w
 $ mount LABEL=bifrost /mnt
 $ cd /mnt
+$ touch /init.tmp
+$ mount --move /sbin/init /init.tmp
 $ tar xf /bifrost-M.N-N.tar.gz
 $ cd /
 $ umount /mnt
