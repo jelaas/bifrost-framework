@@ -31,12 +31,18 @@ $ e2label /dev/sdx1 bifrost
 Unpack the Bifrost distribution tarball into the filesystem.
 $ mount /dev/sdx1 /mnt
 $ cd /mnt
-$ tar xf bifrost-7.1-1.tar.gz
+$ tar xf bifrost-7.2-1.tar.gz
 
 Chroot into the filesystem.
 $ chroot /mnt
 
-Install grub. 
+Install boot loader. Extlinux or Grub.
+Alt 1: Install extlinux.
+$ extlinux --install /boot/extlinux
+$ cat /usr/lib/syslinux/mbr.bin > /dev/sdx
+$ cp /boot/extlinux/extlinux.conf.default /boot/extlinux/extlinux.conf
+
+Alt 2: Install grub. 
 $ mount -t devtmpfs devtmpfs /dev
 $ mount -t proc proc /proc
 $ grub-install /dev/sdx
@@ -45,11 +51,11 @@ $ umount /dev
 $ umount /proc
 $ sync
 
- Creating a bootable diskimage from within Bifrost 7.1
+ Creating a bootable diskimage from within Bifrost 7.2
 -------------------------------------------------------
 First you need the bifrost distribution tarball.
 Download or copy to /.
-$ make-bifrost-image /bifrost-beta-7.1-1.tar.gz
+$ make-bifrost-image /bifrost-7.2-1.tar.gz
 The image is now at /tmp/imagefs/bifrost.img
 To install just copy or dd to a device.
 $ dd if=/tmp/imagefs/bifrost.img of=/dev/sdx bs=4096
