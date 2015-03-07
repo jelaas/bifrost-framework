@@ -18,6 +18,20 @@ Activation is indicated by the file '/opt/<pkg>/etc/config.flags/<pkg>', this fi
 Configuration should be kept together with the rest of the package under '/opt/<pkg>'.
 It is recommended that an optional package contains a file '/opt/<pkg>/pkgversion' with contents of the format '<pkgname>-<versionstring>-<buildversion>'. This file should fully identify the name and version of the package.
 
+opt-get the simple Bifrost package manager
+------------------------------------------
+
+opt-get list|fetch|install|update [name]
+
+Example: Installing a package
+# opt-get list|grep ppp
+http://bifrost-network.org/opt-ppp-2.4.5-2.tar.gz
+# opt-get install opt-ppp-2.4.5-2.tar.gz
+
+opt-get configuration:
+# cat /etc/opt/sources.list
+http://bifrost-network.org/opt
+
 Build system for the Bifrost core monolith
 ------------------------------------------
 
