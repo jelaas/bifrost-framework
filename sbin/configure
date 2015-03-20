@@ -572,7 +572,6 @@ if [ "$1" = services ]; then
 
     read cron < $ETC/config.flags/cron || cron=yes
     read dhcpd < $ETC/config.flags/dhcpd || dhcpd=no
-    read rtcache < $ETC/config.flags/disable-route-cache || rtcache=yes
     read dnsmasq < $ETC/config.flags/dnsmasq || dnsmasq=no
     read fsck < $ETC/config.flags/fsck || fsck=no
     read fw6rules < $ETC/config.flags/fw6rules || fw6rules=no
@@ -591,7 +590,6 @@ if [ "$1" = services ]; then
     
     [ "$cron" = yes ] && cron=on; [ "$cron" = no ] && cron=off
     [ "$dhcpd" = yes ] && dhcpd=on; [ "$dhcpd" = no ] && dhcpd=off
-    [ "$rtcache" = yes ] && rtcache=on; [ "$rtcache" = no ] && rtcache=off
     [ "$dnsmasq" = yes ] && dnsmasq=on; [ "$dnsmasq" = no ] && dnsmasq=off
     [ "$fsck" = yes ] && fsck=on; [ "$fsck" = no ] && fsck=off
     [ "$fw6rules" = yes ] && fw6rules=on; [ "$fw6rules" = no ] && fw6rules=off
@@ -608,14 +606,13 @@ if [ "$1" = services ]; then
     [ "$sshd" = yes ] && sshd=on; [ "$sshd" = no ] && sshd=off
     [ "$swedishkeyboard" = yes ] && swedishkeyboard=on; [ "$swedishkeyboard" = no ] && swedishkeyboard=off
     
-    rc=$(dialog --no-lines --backtitle "$BACKTITLE" --stdout --ok-label Apply --separate-output --default-item "$item" --title "Configure services" --checklist "Core services" 0 0 0 cron "Cron daemon" $cron dhcpd "DHCP daemon" $dhcpd rtcache "Disable route cache" $rtcache dnsmasq "Dnsmasq" $dnsmasq fsck "Extra fsck at boot" $fsck fw6rules "IPv6 firewall" $fw6rules fwrules "IPv4 firewall" $fwrules ifrename "Renaming of interfaces" $ifrename ifstat2 "Ifstat2 daemon for network statistics" $ifstat2 inetd "Inetd services" $inetd ipmi "Load ipmi modules for ipmitool" $ipmi ipv4forward "Enable IPv4 forwarding" $ipv4forward ipv6forward "Enable IPv6 forwarding" $ipv6forward ntp "NTP daemon" $ntp ramlog "Persistent ramlog" $ramlog rwsystem "Rootfs writable after boot" $rwsystem sshd "SSH daemon" $sshd swedishkeyboard "Swedish keyboard" $swedishkeyboard)
+    rc=$(dialog --no-lines --backtitle "$BACKTITLE" --stdout --ok-label Apply --separate-output --default-item "$item" --title "Configure services" --checklist "Core services" 0 0 0 cron "Cron daemon" $cron dhcpd "DHCP daemon" $dhcpd dnsmasq "Dnsmasq" $dnsmasq fsck "Extra fsck at boot" $fsck fw6rules "IPv6 firewall" $fw6rules fwrules "IPv4 firewall" $fwrules ifrename "Renaming of interfaces" $ifrename ifstat2 "Ifstat2 daemon for network statistics" $ifstat2 inetd "Inetd services" $inetd ipmi "Load ipmi modules for ipmitool" $ipmi ipv4forward "Enable IPv4 forwarding" $ipv4forward ipv6forward "Enable IPv6 forwarding" $ipv6forward ntp "NTP daemon" $ntp ramlog "Persistent ramlog" $ramlog rwsystem "Rootfs writable after boot" $rwsystem sshd "SSH daemon" $sshd swedishkeyboard "Swedish keyboard" $swedishkeyboard)
     [ $? = 0 ] || exit 0
     
     item=$rc
     
     cron=no; [[ "$rc" =~ cron ]] && cron=yes; echo $cron > $ETC/config.flags/cron
     dhcpd=no; [[ "$rc" =~ dhcpd ]] && dhcpd=yes; echo $dhcpd > $ETC/config.flags/dhcpd
-    rtcache=no; [[ "$rc" =~ rtcache ]] && rtcache=yes; echo $rtcache > $ETC/config.flags/disable-route-cache
     dnsmasq=no; [[ "$rc" =~ dnsmasq ]] && dnsmasq=yes; echo $dnsmasq > $ETC/config.flags/dnsmasq
     fsck=no; [[ "$rc" =~ fsck ]] && fsck=yes; echo $fsck > $ETC/config.flags/fsck
     fw6rules=no; [[ "$rc" =~ fw6rules ]] && fw6rules=yes; echo $fw6rules > $ETC/config.flags/fw6rules

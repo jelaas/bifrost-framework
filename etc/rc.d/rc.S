@@ -74,7 +74,7 @@ done
 for f in PANIC resolv.conf; do
     [ -f /etc/config.data/$f ] || cp -p /etc/config.preconf/$f.default /etc/config.data/$f
 done
-for f in cron ifstat2 sshd swedish-keyboard ipv4-forward ipv6-forward fw6rules fwrules ignore-icmp-bc ipmi short-defrag-time disable-route-cache; do
+for f in cron ifstat2 sshd swedish-keyboard ipv4-forward ipv6-forward fw6rules fwrules ignore-icmp-bc ipmi short-defrag-time; do
     [ -f /etc/config.flags/$f ] || echo yes > /etc/config.flags/$f
 done
 for f in usb-suspend rwsystem fsck dhcpd inetd ntp dnsmasq ramlog slow-keyboard ifrename conntrack local-port-range eth0.nic dummy0.nic; do
