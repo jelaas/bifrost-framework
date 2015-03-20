@@ -2,5 +2,9 @@ Some places in the init process will call out to hooks if they are present in th
 The hooked must be a textfile that is sourced by bash.
 
 Current hooks:
+/etc/config.hooks/mount.pre called from etc/rc.S before mounting filesystems
+/etc/config.hooks/mount.post called from etc/rc.S after mounting filesystems 
+/etc/config.hooks/net.pre called from etc/rc.M before rc.inet
 /etc/config.hooks/inet.netdevs.pre called from etc/rc.d/rc.inet before bringing up the network interfaces.
 /etc/config.hooks/inet.netdevs.post called from etc/rc.d/rc.inet after bringing up the network interfaces.
+/etc/config.hooks/net.post called from etc/rc.M after rc.inet

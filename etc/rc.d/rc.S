@@ -120,6 +120,7 @@ mount -n --bind /tmp/System/resolv.conf /etc/resolv.conf
 
 # Detect hardware and modprobe appropriate kernel modules
 # module may be disable in /etc/config.flags/MODULENAME.mod
+[ -f /etc/config.hooks/mount.pre ] && . /etc/config.hooks/mount.pre
 if [ $(allcaps) = yes ]; then
     for d in $(/usr/bin/device-detect) NONE; do
 	if [ -f /etc/config.flags/$d.mod ]; then
@@ -154,6 +155,7 @@ done
 # Mount file systems in fstab except NFS.
 echo "Mounting any additional filesystems"
 mount -n -avt nonfs
+[ -f /etc/config.hooks/mount.post ] && . /etc/config.hooks/mount.post
 
 #Setup RAM logging
 export RAM_LOG=`cat /etc/config.flags/ramlog`

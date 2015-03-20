@@ -52,9 +52,11 @@ fi
 
 # - - - - - - - - - - - - - - - - - - - - - -
 # Initialize the NET subsystem.
+[ -f /etc/config.hooks/net.pre ] && . /etc/config.hooks/net.pre
 if [ -f /etc/rc.d/rc.inet ]; then
     /etc/rc.d/rc.inet 2> /dev/null
 fi
+[ -f /etc/config.hooks/net.post ] && . /etc/config.hooks/net.post
 
 # Turn off flow control on all interfaces
 flowctl off
@@ -146,6 +148,8 @@ for file in $(ls /opt/*/etc/config.flags/* 2>/dev/null); do
         fi
     fi
 done
+
+[ -x /etc/rc.local ] && /etc/rc.local
 
 read GREET < /etc/.version
 echo ${GREET^} ready.
