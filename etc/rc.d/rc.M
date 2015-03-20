@@ -88,6 +88,18 @@ if [ "$FLAG" = yes ]; then
     /etc/rc.d/rc.dnsmasq start && echo ok || echo failed
 fi
 
+# Start dhcp relay service
+read FLAG < /etc/config.flags/dhcrelay4
+if [ "$FLAG" = yes ]; then
+    echo -n " dhcrelay IPv4 "
+    /etc/rc.d/rc.dhcrelay4 start && echo ok || echo failed
+fi
+read FLAG < /etc/config.flags/dhcrelay6
+if [ "$FLAG" = yes ]; then
+    echo -n " dhcrelay IPv6 "
+    /etc/rc.d/rc.dhcrelay6 start && echo ok || echo failed
+fi
+
 # Inetd daemon
 read FLAG < /etc/config.flags/inetd
 if [ "$FLAG" = yes ]; then

@@ -71,13 +71,13 @@ done
 for f in root; do
     [ -f /etc/cron.user/$f ] || cp -p /etc/config.preconf/cron-$f.default /etc/cron.user/$f
 done
-for f in PANIC resolv.conf; do
+for f in PANIC resolv.conf dhcrelay4.conf dhcrelay6.conf; do
     [ -f /etc/config.data/$f ] || cp -p /etc/config.preconf/$f.default /etc/config.data/$f
 done
 for f in cron ifstat2 sshd swedish-keyboard ipv4-forward ipv6-forward fw6rules fwrules ignore-icmp-bc ipmi short-defrag-time; do
     [ -f /etc/config.flags/$f ] || echo yes > /etc/config.flags/$f
 done
-for f in usb-suspend rwsystem fsck dhcpd inetd ntp dnsmasq ramlog slow-keyboard ifrename conntrack local-port-range eth0.nic dummy0.nic; do
+for f in usb-suspend rwsystem fsck dhcpd dhcrelay4 dhcrelay6 inetd ntp dnsmasq ramlog slow-keyboard ifrename conntrack local-port-range eth0.nic dummy0.nic; do
     [ -f /etc/config.flags/$f ] || echo no > /etc/config.flags/$f
 done
 [ -f /etc/config.data/tmpsize ] || echo 256m > /etc/config.data/tmpsize

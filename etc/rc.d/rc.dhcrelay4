@@ -1,0 +1,8 @@
+#!/bin/bash
+
+OPTIONS=""
+[ "$1" = start ] && [ -f /etc/config.data/dhcrelay4.conf ] && . /etc/config.data/dhcrelay4.conf
+[ "$1" = start ] && [ -f /sbin/dhcrelay ] && taskset -c 0 /sbin/dhcrelay -4 $OPTIONS && exit 0
+[ "$1" = stop ] && [ -f /sbin/dhcrelay ] && killall dhcrelay && exit 0
+
+exit 2
