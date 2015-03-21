@@ -143,6 +143,8 @@ if [ "$FLAG" = yes ]; then
     fi
 fi
 
+[ -f /etc/config.hooks/opt.pre ] && . /etc/config.hooks/opt.pre
+
 #-- loop through all rc-scripts provided by extra optional packages
 #-- for each of them check for matching config.flag -eq "yes" and
 #-- if so run the rc-script with argument "start".
@@ -161,6 +163,7 @@ for file in $(ls /opt/*/etc/config.flags/* 2>/dev/null); do
     fi
 done
 
+[ -f /etc/config.hooks/opt.post ] && . /etc/config.hooks/opt.post
 [ -x /etc/rc.local ] && /etc/rc.local
 
 read GREET < /etc/.version
