@@ -10,6 +10,23 @@
 # Tell the viewers what's going to happen...
 echo "Going multiuser..."
 
+# Check kernel module dependencies
+[ $(allcaps) = yes ] && depmod
+
+# Detect hardware and modprobe appropriate kernel modules
+# module may be disable in /etc/config.flags/MODULENAME.mod
+if [ $(allcaps) = yes ]; then
+    for d in $(/usr/bin/eth-detect) NONE; do
+	if [ -f /etc/config.flags/$d.mod ]; then
+	    if [ `cat /etc/config.flags/$d.mod` = no ]; then
+		echo "/etc/config.flags/$d.mod disabled"
+		continue
+	    fi
+	fi
+	[ "$d" = NONE ] || modprobe $d
+    done
+fi
+
 # Check if system has been configured
 if [ ! -f /etc/.configured ]; then
     configure
@@ -32,23 +49,6 @@ fi
 
 # Set reboot time for panic to 1 minute
 [ $(allcaps) = yes ] && (/bin/echo 60 > /proc/sys/kernel/panic)
-
-# Check kernel module dependencies
-[ $(allcaps) = yes ] && depmod
-
-# Detect hardware and modprobe appropriate kernel modules
-# module may be disable in /etc/config.flags/MODULENAME.mod
-if [ $(allcaps) = yes ]; then
-    for d in $(/usr/bin/eth-detect) NONE; do
-	if [ -f /etc/config.flags/$d.mod ]; then
-	    if [ `cat /etc/config.flags/$d.mod` = no ]; then
-		echo "/etc/config.flags/$d.mod disabled"
-		continue
-	    fi
-	fi
-	[ "$d" = NONE ] || modprobe $d
-    done
-fi
 
 # - - - - - - - - - - - - - - - - - - - - - -
 # Initialize the NET subsystem.
