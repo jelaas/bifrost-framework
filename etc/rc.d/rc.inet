@@ -69,7 +69,7 @@ for F in $NETDEVS/*.nic NONE ; do
     [ -f /etc/config.flags/$IF.nic ] && read ENABLED < /etc/config.flags/$IF.nic
     if [ "$ENABLED" = "yes" ]; then
 	IFTYPE=$(. $F;echo $IFTYPE)
-	[ "$IFTYPE" = team -o "$IFTYPE" = bind ] && /etc/rc.d/rc.interfaces $IF up
+	[ "$IFTYPE" = team -o "$IFTYPE" = bond ] && /etc/rc.d/rc.interfaces $IF up
     fi
 done
 
