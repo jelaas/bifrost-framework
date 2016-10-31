@@ -221,6 +221,7 @@ function ifsecondary {
     [ "$DHCP_CLIENT" = yes ] || DHCP_CLIENT=no
     
     [ "$CONFIG_NO_SPOOF" ] || CONFIG_NO_SPOOF=yes
+    [ "$CONFIG_NO_ASYM_SPOOF" ] || CONFIG_NO_ASYM_SPOOF=yes
     [ "$CONFIG_NO_SOURCE" ] || CONFIG_NO_SOURCE=yes
     [ "$CONFIG_PROXY_ARP" ] || CONFIG_PROXY_ARP=no
     [ "$CONFIG_REDIRECT" ] || CONFIG_REDIRECT=yes
@@ -321,6 +322,7 @@ export IP6MASK5=$IP6MASK5
 export BROADCAST5=$BROADCAST5
 export QDISC=$QDISC
 export CONFIG_NO_SPOOF=$CONFIG_NO_SPOOF
+export CONFIG_NO_ASYM_SPOOF=$CONFIG_NO_ASYM_SPOOF
 export CONFIG_NO_SOURCE=$CONFIG_NO_SOURCE
 export CONFIG_PROXY_ARP=$CONFIG_PROXY_ARP
 export CONFIG_REDIRECT=$CONFIG_REDIRECT
@@ -367,7 +369,8 @@ function ifphys {
     [ -f $ETC/config.data/${ifname}.nic ] && . $ETC/config.data/${ifname}.nic
     [ "$DHCP_CLIENT" = yes ] || DHCP_CLIENT=no
     
-    [ "$CONFIG_NO_SPOOF" ] || CONFIG_NO_SPOOF=yes
+    [ "$CONFIG_NO_SPOOF" ] || CONFIG_NO_SPOOF=no
+    [ "$CONFIG_NO_ASYM_SPOOF" ] || CONFIG_NO_ASYM_SPOOF=yes
     [ "$CONFIG_NO_SOURCE" ] || CONFIG_NO_SOURCE=yes
     [ "$CONFIG_PROXY_ARP" ] || CONFIG_PROXY_ARP=no
     [ "$CONFIG_REDIRECT" ] || CONFIG_REDIRECT=yes
@@ -377,7 +380,7 @@ function ifphys {
     while true; do
 	rc=$(dialog --no-lines --stdout --backtitle "$BACKTITLE" --title "Configure $ifname" --ok-label Select --cancel-label Cancel --default-item "$item" --menu  "Choose" 0 0 0 DHCP "$DHCP_CLIENT"\
 	 IP4ADDR "$IP4ADDR" IP4PREFIX "$IP4MASK" BROADCAST "$BROADCAST" IP6ADDR "$IP6ADDR" IP6PREFIX "$IP6MASK" "Secondary addresses" ""\
-	 QDISC "$QDISC" master "$MASTER" no_spoof "$CONFIG_NO_SPOOF" no_source "$CONFIG_NO_SOURCE" proxy_arp "$CONFIG_PROXY_ARP" redirect "$CONFIG_REDIRECT" accept_redirect "$CONFIG_ACCEPT_REDIRECT"\
+	 QDISC "$QDISC" master "$MASTER" no_asym_spoof "$CONFIG_NO_ASYM_SPOOF" no_spoof "$CONFIG_NO_SPOOF" no_source "$CONFIG_NO_SOURCE" proxy_arp "$CONFIG_PROXY_ARP" redirect "$CONFIG_REDIRECT" accept_redirect "$CONFIG_ACCEPT_REDIRECT"\
 	 log_martians "$CONFIG_LOG_MARTIANS" description "$DESCRIPTION" Save  "")
 	[ $? = 0 ] || return 0
 
@@ -390,6 +393,8 @@ function ifphys {
 	[ "$rc" = "Secondary addresses" ] && ifsecondary $ifname && continue
 	[ "$rc" = no_spoof ] && [ "$CONFIG_NO_SPOOF" = yes ] && CONFIG_NO_SPOOF=no && continue
 	[ "$rc" = no_spoof ] && [ "$CONFIG_NO_SPOOF" = no ] && CONFIG_NO_SPOOF=yes && continue
+	[ "$rc" = no_asym_spoof ] && [ "$CONFIG_NO_ASYM_SPOOF" = yes ] && CONFIG_NO_ASYM_SPOOF=no && continue
+	[ "$rc" = no_asym_spoof ] && [ "$CONFIG_NO_ASYM_SPOOF" = no ] && CONFIG_NO_ASYM_SPOOF=yes && continue
 	[ "$rc" = no_source ] && [ "$CONFIG_NO_SOURCE" = yes ] && CONFIG_NO_SOURCE=no && continue
 	[ "$rc" = no_source ] && [ "$CONFIG_NO_SOURCE" = no ] && CONFIG_NO_SOURCE=yes && continue
 	[ "$rc" = proxy_arp ] && [ "$CONFIG_PROXY_ARP" = yes ] && CONFIG_PROXY_ARP=no && continue
@@ -488,6 +493,7 @@ export IP6MASK5=$IP6MASK5
 export BROADCAST5=$BROADCAST5
 export QDISC=$QDISC
 export CONFIG_NO_SPOOF=$CONFIG_NO_SPOOF
+export CONFIG_NO_ASYM_SPOOF=$CONFIG_NO_ASYM_SPOOF
 export CONFIG_NO_SOURCE=$CONFIG_NO_SOURCE
 export CONFIG_PROXY_ARP=$CONFIG_PROXY_ARP
 export CONFIG_REDIRECT=$CONFIG_REDIRECT
