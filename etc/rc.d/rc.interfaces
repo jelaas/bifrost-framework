@@ -35,11 +35,11 @@ show()
     fi
     echo "Options:"
     echo
-    echo "Asymmetric Spoof Protection(CONFIG_NO_SPOOF_ASYM): $CONFIG_NO_SPOOF_ASYM"
+    echo "Loose Spoof Protection     (CONFIG_NO_ASYM_SPOOF): $CONFIG_NO_ASYM_SPOOF"
     echo "Spoof Protection                (CONFIG_NO_SPOOF): $CONFIG_NO_SPOOF"
     echo "Disable Source Routing         (CONFIG_NO_SOURCE): $CONFIG_NO_SOURCE"
     echo "Proxy ARP                      (CONFIG_PROXY_ARP): $CONFIG_PROXY_ARP"
-    echo "Proxy ARP Private VLAN   (CONFIG_PROXY_ARP_PVLAN): $CONFIG_PROXY_ARP_PVLAN"
+    echo "Proxy ARP Private VLAN   (CONFIG_PVLAN_PROXY_ARP): $CONFIG_PVLAN_PROXY_ARP"
     echo "Send ICMP Redirects             (CONFIG_REDIRECT): $CONFIG_REDIRECT"
     echo "Accept ICMP Redirects    (CONFIG_ACCEPT_REDIRECT): $CONFIG_ACCEPT_REDIRECT"
     echo "Log Src Addr With No Route  (CONFIG_LOG_MARTIANS): $CONFIG_LOG_MARTIANS"
@@ -143,7 +143,7 @@ set_spoof_asymmetric()
 {
    # Turn on Source Address Verification and get spoof protection
     if [ -e /proc/sys/net/ipv4/conf/$IF/rp_filter ]; then
-	if [ ${CONFIG_NO_SPOOF_ASYM:-no} = "yes" ]; then
+	if [ ${CONFIG_NO_ASYM_SPOOF:-no} = "yes" ]; then
 	    echo -n "$PRE asymmetric spoof filtering on"
 	    PRE=","
 	    /bin/echo 2 > /proc/sys/net/ipv4/conf/$IF/rp_filter
@@ -199,7 +199,7 @@ set_proxy_arp_pvlan()
 {
     # Turn on Proxy ARP
     if [ -e /proc/sys/net/ipv4/conf/$IF/proxy_arp_pvlan ]; then
-	if [ ${CONFIG_PROXY_ARP_PVLAN:-no} = "yes" ]; then
+	if [ ${CONFIG_PVLAN_PROXY_ARP:-no} = "yes" ]; then
 	    echo -n "$PRE proxy ARP for Private VLAN on"
 	    PRE=","
 	    /bin/echo 1 > /proc/sys/net/ipv4/conf/$IF/proxy_arp_pvlan
