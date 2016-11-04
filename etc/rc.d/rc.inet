@@ -163,6 +163,16 @@ if [ -e /proc/sys/net/ipv4/ip_local_port_range ]; then
     cat /proc/sys/net/ipv4/ip_local_port_range | tr -s '       ' '-'
 fi
 
+# Make sure /proc/sys/net/core/rmem_max is sufficiently large
+if [ -e /proc/sys/net/core/rmem_max ]; then
+    RMEM=1048576
+    [ -f /etc/config.flags/rmem_max ] && read RMEM < /proc/sys/net/core/rmem_max
+    read N < /proc/sys/net/core/rmem_max
+    [ "$N" -lt "$RMEM" ] && echo "$RMEM" > /proc/sys/net/core/rmem_max
+    read N < /proc/sys/net/core/rmem_max
+    [ -e /proc/sys/net/core/rmem_default ] && echo $N > /proc/sys/net/core/rmem_default
+fi
+
 # Turn on TCP SYN-flooding protection.
 if [ -e /proc/sys/net/ipv4/tcp_syncookies ]; then
     echo "Turning on TCP SYN flood protection"
