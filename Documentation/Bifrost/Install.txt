@@ -94,6 +94,7 @@ p
 1
 <startsector>
 <return>
+a
 w
 
 $ reboot
