@@ -77,7 +77,7 @@ done
 for f in cron ifstat2 sshd swedish-keyboard ipv4-forward ipv6-forward fw6rules fwrules ignore-icmp-bc ipmi short-defrag-time; do
     [ -f /etc/config.flags/$f ] || echo yes > /etc/config.flags/$f
 done
-for f in usb-suspend rwsystem fsck dhcpd dhcrelay4 dhcrelay6 inetd ntp dnsmasq ramlog slow-keyboard ifrename conntrack local-port-range eth0.nic dummy0.nic; do
+for f in usb-suspend rwsystem fsck dhcpd dhcrelay4 dhcrelay6 inetd ntp dnsmasq ramlog slow-keyboard ifrename conntrack local-port-range eth0.nic dummy0.nic pmem; do
     [ -f /etc/config.flags/$f ] || echo no > /etc/config.flags/$f
 done
 [ -f /etc/config.data/tmpsize ] || echo 256m > /etc/config.data/tmpsize
@@ -133,14 +133,27 @@ if [ $(allcaps) = yes ]; then
     done
 fi
 
-# if /var is _not_ the default ram disk, we need to mount it now
+# Mount suitable /var. Ramdisk, pmem or specified in /etc/fstab
+FLAG=no; [ -f /etc/config.flags/pmem ] && read FLAG < /etc/config.flags/pmem
+if [ "$FLAG" = yes ]; then
+    modprobe pmem
+    if [ -e /dev/pmem0 ]; then
+        if ! file -s /dev/pmem0 | grep -q ext4; then
+            mkfs.ext4 -F /dev/pmem0
+        fi
+    fi
+fi
 if mount -fn /var &>/dev/null; then
     [ -L /var ] && rm -f /var
     mkdir -p /var
     fsck -y /var
     mount -n /var || mount -n --bind /tmp /var
 else
-    mount -n --bind /tmp /var
+    if [ "$FLAG" = yes ]; then
+	mount -n /dev/pmem0 /var || mount -n --bind /tmp /var
+    else
+	mount -n --bind /tmp /var
+    fi
 fi
 
 # if /var is on kept between runs, we need to clean up old pids

@@ -1,0 +1,48 @@
+Using persistent memory as filesystem for /var
+----------------------------------------------
+
+A technique for persisting a ram-based filesystem across warm reboots.
+
+We need to reserve a bit of ram for this filesystem.
+
+How to figure of a possible address to place the reserved ram:
+
+Bifrost:/# dmesg|grep BIOS-e820|grep usable
+[    0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009ebff] usable
+[    0.000000] BIOS-e820: [mem 0x0000000000100000-0x000000003fedffff] usable
+[    0.000000] BIOS-e820: [mem 0x000000003ff00000-0x000000003fffffff] usable
+
+Bulk of ram is placed between 0x0000000000100000-0x000000003fedffff.
+
+In decimal:
+Bifrost:/# printf "%d %d\n" 0x0000000000100000 0x000000003fedffff 
+1048576 1072562175
+
+Highest address in megabytes:
+Bifrost:/# echo $[ 0x000000003fedffff / 1048576 ]  
+1022
+
+Edit /boot/extlinux/extlinux.conf if using syslinux as bootloader.
+
+You need to a reservation via memmap to the kernel commandline.
+
+To reserve 64M at address 800M specify 64M!800M.
+
+Example:
+LINUX /boot/kernel.default-x86_64 memmap=64M!800M
+
+Active pmem in Bifrost with:
+remount w
+echo yes > /etc/config.flags/pmem
+remount r
+
+After reboot /var will now reside on a filesystem on the block device /dev/pmem0.
+
+It will look like this:
+Bifrost:/# df -h /var
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/pmem0             58M  1.3M   53M   3% /var
+
+You can check in dmesg that reservation worked:
+Bifrost:/# dmesg |grep user:|grep "type 12"
+[    0.000000] user: [mem 0x0000000032000000-0x0000000035ffffff] persistent (type 12)
