@@ -166,6 +166,7 @@ for d in adm spool spool/cron spool/locks tmp log lock run empty db lib/misc; do
 done
 
 # Mount file systems in fstab except NFS.
+sleep 5
 echo "Mounting any additional filesystems"
 mount -n -avt nonfs
 [ -f /etc/config.hooks/mount.post ] && . /etc/config.hooks/mount.post
